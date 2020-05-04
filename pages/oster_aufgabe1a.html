@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Teske - Covid 19</title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="stylesheet" href="../css/leaflet.css"/>
+    <script src="../js/leaflet.js" crossorigin=""></script>
+    <script src="../js/jquery-3.5.0.min.js" crossorigin=""></script>
+    <style>
+        #map {
+            width: 800px;
+            height: 500px;
+        }
+
+        .info {
+            padding: 6px 8px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        .info h4 {
+            margin: 0 0 5px;
+            color: #777;
+        }
+
+        .legend {
+            text-align: left;
+            line-height: 18px;
+            color: #555;
+        }
+
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Teske - Covid 19 </h1>
+    <h2>Aufgabe 1a (Oster)</h2>
+    <p style="margin-bottom: 2rem;"><a href="index.html">Zurück zur Projektseite</a></p>
+    <div id="mapid" style="width: 1000px; height: 750px;"></div>
+
+    <script>
+
+
+
+        googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: "<a href=\'http://maps.google.com/\'>Google</a> Maps Satellite",
+            noWrap: true
+        });
+
+        googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: "<a href=\'http://maps.google.com/\'>Google</a> Maps",
+            noWrap: true
+        });
+
+        osmMapnik = new L.tileLayer(
+            'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                maxZoom: 20,
+                attribution: 'Map data © OpenStreetMap contributors'
+            }
+        );
+
+        osmMapnikbw = new L.tileLayer(
+            'http://{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png',
+            {
+                maxZoom: 20,
+                attribution: 'Map data © OpenStreetMap contributors'
+            }
+        );
+
+
+        var map = L.map('mapid', {
+            center: [0, 0],
+            zoom: 2,
+            layers: [googleSat, googleStreets, osmMapnik, osmMapnikbw]
+        });
+
+
+        // Choropleth Map styling 
+        function style(feature) {
+            return {
+                fillColor: getColor(feature.properties.scases),
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                dashArray: '3',
+                fillOpacity: 0.7
+            }
+        }
+        // get color depending number cases
+        function getColor(d) {
+            return d > 200000 ? '#800026' :
+                d > 100000 ? '#BD0026' :
+                    d > 50000 ? '#E31A1C' :
+                        d > 10000 ? '#FC4E2A' :
+                            d > 1000 ? '#FD8D3C' :
+                                d > 100 ? '#FEB24C' :
+                                    d > 10 ? '#FED976' :
+                                        '#FFEDA0';
+        }
+
+
+
+        // Popup 
+
+        function onEachFeature(feature, layer) {
+            layer.bindPopup('<pre>' + JSON.stringify(feature.properties, null, ' ').replace(/[\{\}"]/g, '') + '</pre>');
+        }
+
+
+        // Corvid Data via WFS / GeoJSON
+        var geojsonLayer = new L.GeoJSON(null, { onEachFeature: onEachFeature });
+
+        $.ajax({
+            url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
+            data: {
+                version: '1.0.0',
+                request: 'GetFeature',
+                service: 'WFS',
+                typeName: 'teske:covid19_new',
+                maxFeatures: '2000',
+                outputFormat: 'application/json'
+            },
+            dataType: 'json',
+            jsonpCallback: 'getJson',
+            success: handleJson
+        });
+
+        function handleJson(data) {
+            console.log(data);
+            geojsonLayer.addData(data);
+            geojsonLayer.setStyle(style);
+        }
+
+        map.addLayer(geojsonLayer);
+        // L.geoJSON(geojsonLayer).addTo(map);
+
+        // Layer control
+        var baseMaps = {
+            "googleSat": googleSat,
+            "googleStreets": googleStreets,
+            "osmMapnik": osmMapnik,
+            "osmMapnikbw": osmMapnikbw
+        };
+
+        var overlayMaps = {
+            "Covid19": geojsonLayer
+        };
+
+        L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+        // Legend
+        var legend = L.control({ position: 'bottomright' });
+
+        legend.onAdd = function (map) {
+
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades = [0, 10, 100, 1000, 10000, 50000, 100000, 200000],
+                labels = [];
+
+            // loop through our density intervals and generate a label with a colored square for each interval
+            for (var i = 0; i < grades.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+            }
+
+            return div;
+        };
+
+        legend.addTo(map);
+
+    </script>
+
+</body>
+
+</html>
