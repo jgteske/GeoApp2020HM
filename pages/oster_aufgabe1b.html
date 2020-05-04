@@ -113,10 +113,10 @@
 			//////KONFIGURIERBAR////////////////
 			//Maximalwert für cases_per_pop der für die Generierung der Choropletenkarte und Legende berücksichtigt wird
             ////Damit können Extremwerte wie z.B. bei Zwergstaaten abgeschwächt werden !!!
-			var max_cases_per_pop_allowed = 50;  
+			var max_cases_per_pop_allowed = 500;  
             ////////////////////////////////////
 			//Anzahl der Farbstufenklassen bzw. Werteklassen für Choropletenkarte und Legende
-			var numb_classes = 15;
+			var numb_classes = 20;
 			////////////////////////////////////
 			
 			//Klassenbreite im Range von 0-1 abhängig von Klassenzahl
@@ -129,7 +129,7 @@
 			
 			
 			///NEU CHROMA.JS - Definition der Farbabstufungen mit chroma.js
-            colorRamp = chroma.scale('OrRd').classes(numb_classes); //Farbstufenanzhal aus numb_classes
+            colorRamp = chroma.scale('OrRd'); //Farbstufenanzhal aus numb_classes
 			//colorRamp = chroma.scale('OrRd'); //alternativ: stufenlose Variante
 			
 
