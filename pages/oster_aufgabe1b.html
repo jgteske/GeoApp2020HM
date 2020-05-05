@@ -58,6 +58,17 @@
         <!-- ///////Definition des DIV-Containers\\\\\\\\-->
     <div id="mapid" style="width: 1000px; height: 750px;"></div>
         
+    <div class="settings">
+        <ul>
+            Einstellungen:
+            <li>
+                var max_cases_per_pop_allowed = 800;  
+            </li>
+            <li>
+                var numb_classes = 20;
+            </li>
+        </ul>
+    </div>
 
     <script>
 		    ///////Layerorganisation der Hintergrundkarten\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -113,7 +124,7 @@
 			//////KONFIGURIERBAR////////////////
 			//Maximalwert für cases_per_pop der für die Generierung der Choropletenkarte und Legende berücksichtigt wird
             ////Damit können Extremwerte wie z.B. bei Zwergstaaten abgeschwächt werden !!!
-			var max_cases_per_pop_allowed = 500;  
+			var max_cases_per_pop_allowed = 800;  
             ////////////////////////////////////
 			//Anzahl der Farbstufenklassen bzw. Werteklassen für Choropletenkarte und Legende
 			var numb_classes = 20;
