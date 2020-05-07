@@ -127,13 +127,13 @@
         ///////////////////////////////////////////////////////
         ///Variableninitialisierung für Statistikberechnungen
         var deaths_per_pop = 0;
-        var max_scases = 0;
+        var max_sdeaths = 0;
         var max_deaths_per_pop = 0;
 
         //////KONFIGURIERBAR////////////////
         //Maximalwert für deaths_per_pop der für die Generierung der Choropletenkarte und Legende berücksichtigt wird
         ////Damit können Extremwerte wie z.B. bei Zwergstaaten abgeschwächt werden !!!
-        var max_deaths_per_pop_allowed = 500;
+        var max_deaths_per_pop_allowed = 50;
         ////////////////////////////////////
         //Anzahl der Farbstufenklassen bzw. Werteklassen für Choropletenkarte und Legende
         var numb_classes = 10;
@@ -189,7 +189,6 @@
             js_objects_of_json_string = JSON.parse(jproperties);
             /////////////////////////////////////////////////////////////////////////
 
-
             ///Anzahl der Einzelobjekte bzw. Länder ermitteln
             obj_count = js_objects_of_json_string.length;
 
@@ -203,18 +202,17 @@
                     // else hier nur temporär solgange bei Eritrea keine Einwohnerzahl in DB !!!
                 } else {
                     if (js_objects_of_json_string[i]['name_de'] == "Eritrea") {
-                        deaths_per_pop = (js_objects_of_json_string[i]['scases'] / 6050000) * 100000;
+                        deaths_per_pop = (js_objects_of_json_string[i]['sdeaths'] / 6050000) * 100000;
                     }///////////////////////////////////////////////////////////////////////////				
                 }
 
                 /////Arrays mit den Objektdaten füllen/////////////////////////////////////
-                cases_per_object_arr.push(js_objects_of_json_string[i]['scases']);
-                all_deaths_per_pop_arr.push(deaths_per_pop);
+                cases_per_object_arr.push(js_objects_of_json_string[i]['sdeaths']);
+                all_deaths_per_pop_arr.push(deaths_per_pop);              
             }////////////////////////////////////////////////////////////////////////////////////////////
 
-
             /////Maximalwerte der Fälle und der Verhälniszahl Fälle pro 100.000 EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
-            max_scases = Math.max.apply(null, cases_per_object_arr);
+            max_sdeaths = Math.max.apply(null, cases_per_object_arr);
             max_deaths_per_pop = Math.max.apply(null, all_deaths_per_pop_arr);
 
             //Maximalzahl der Fälle auf Ganzzahl gerundet
@@ -238,12 +236,12 @@
         ///function Choropleth Map styling ///////////////////////////////
         function style(feature) {
 
-            //Berechnung der Covidfälle pro 100.000 Einwohnwer aus Feature Properties scases und mpop eines Landes bei dem Sytlingprozess jedes Polygons
-            deaths_per_pop = (feature.properties.scases / feature.properties.mpop) * 100000;
+            //Berechnung der Todefälle pro 100.000 Einwohnwer aus Feature Properties sdeaths und mpop eines Landes bei dem Sytlingprozess jedes Polygons
+            deaths_per_pop = (feature.properties.sdeaths / feature.properties.mpop) * 100000;
 
             //Nur temporär solgange bei Eritrea keine Einwohnerzahl in DB !!!
             if (feature.properties.name_de == "Eritrea") {
-                deaths_per_pop = (feature.properties.scases / 6050000) * 1000000;
+                deaths_per_pop = (feature.properties.sdeaths / 6050000) * 1000000;
             }/////////////////////////////////////////////////////////////
 
 
@@ -266,14 +264,28 @@
 
         }////////////////////////////////////////////////
 
-        // Selects just the necessary Data to display in a popup
-        
+        // Defines the Sting to put into the Popup onEachFeature
+
         /////////////////////////////////////////////////
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         ///Generierung aller Popup-Fenster aus den JSON feature.properties///////////////////////////////
         function onEachFeature(feature, layer) {
-            layer.bindPopup('<pre>' + JSON.stringify(feature.properties, null, ' ').replace(/[\{\}"]/g, '') + '</pre>');   ///'<br>''<br>''Fälle pro 100.000 EW:)';
+            layer.bindPopup(
+                '<h4>Daten:</h4>' +
+                'ID: ' + feature.properties.id + '<br>' +
+                'Name: ' + feature.properties.name_de + '<br>' +
+                'Ländercode: ' + feature.properties.countrycode + '<br>' +
+                'Kontinent: ' + feature.properties.continent + '<br>' +
+                'Einwohner: ' + feature.properties.mpop + '<br>' +
+                'Fälle: ' + feature.properties.scases + '<br>' +
+                'Todefälle: ' + feature.properties.sdeaths + '<br>' +
+                '<br>' +
+                'Infizierte/100.000 EW: ' + (feature.properties.scases/feature.properties.mpop*100000).toFixed(2) + '<br>' +
+                'Tode/100.000 EW: ' + (feature.properties.sdeaths/feature.properties.mpop*100000).toFixed(4) + '<br>'
+            );
+            //'<h3>Landesdaten:</h3>' + '<pre>' + JSON.stringify(feature.properties, null, ' ').replace(/[\{\}"]/g, '') + '</pre>' + 'Tode/100.000 EW: ' + (feature.properties.sdeaths/feature.properties.mpop*100000).toFixed(4) + '<br>');
+            
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////
 
