@@ -142,7 +142,7 @@
         //Klassenbreite im Range von 0-1 abhängig von Klassenzahl
         var classwidth_between_fac = 1 / numb_classes;
         //////Initialisierung Array für Fallzahlen zu den Einzelobjekten
-        var cases_per_object_arr = [];
+        var deaths_per_object_arr = [];
         //////Initialisierung Array für Verhältniszahl aus Fallzahlen zu Bevölkerung der Einzelobjekte    
         var all_deaths_per_pop_arr = [];
         //////////////////////////////////////////////////////
@@ -207,12 +207,12 @@
                 }
 
                 /////Arrays mit den Objektdaten füllen/////////////////////////////////////
-                cases_per_object_arr.push(js_objects_of_json_string[i]['sdeaths']);
+                deaths_per_object_arr.push(js_objects_of_json_string[i]['sdeaths']);
                 all_deaths_per_pop_arr.push(deaths_per_pop);              
             }////////////////////////////////////////////////////////////////////////////////////////////
 
             /////Maximalwerte der Fälle und der Verhälniszahl Fälle pro 100.000 EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
-            max_sdeaths = Math.max.apply(null, cases_per_object_arr);
+            max_sdeaths = Math.max.apply(null, deaths_per_object_arr);
             max_deaths_per_pop = Math.max.apply(null, all_deaths_per_pop_arr);
 
             //Maximalzahl der Fälle auf Ganzzahl gerundet
