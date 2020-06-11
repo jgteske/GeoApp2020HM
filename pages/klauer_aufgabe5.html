@@ -415,8 +415,8 @@
             "Covid19 Tode - Region Bayern": geojsonLayer_bay_deaths
         };
 
-        L.control.layers(baseMaps, overlayMaps).addTo(map);
-        //L.control.layers(overlayMaps).addTo(map); // To activate later
+        L.control.layers(baseMaps).addTo(map);
+        L.control.layers(overlayMaps).addTo(map);
         ///////////////////////////////////////////////////////////////////
 
 
@@ -458,7 +458,7 @@
             grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
 
             //Generierung der Zahlenwerte der Klassen für die Legende
-            for (var i = 0; i < numb_classes; i++) {
+            for (var i = 0; i < numb_classes_bay; i++) {
                 grades_arr.push(Math.round(max_deaths_per_pop * (classwidth_between_fac * i)));
             }////////////////////////////////////////////////////////
 
@@ -479,6 +479,18 @@
 
             return div;
         };
+
+        // --- Hinzufügen der aktiven Legende -- //
+            map.on('baselayerchange', function (overlayMaps) {
+            // Switch to the Population legend...
+            if (overlayMaps.name === 'Covid19 Tode - Region Bayern') {
+            this.removeControl(legend);
+            legend_bay_deaths.addTo(this);
+            } else {
+            this.removeControl(legend_bay_deaths);
+            legend.addTo(this);
+            }
+        });
 
     </script>
 
