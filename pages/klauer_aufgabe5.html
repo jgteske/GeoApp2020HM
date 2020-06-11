@@ -145,8 +145,8 @@
 
 
         ///NEU CHROMA.JS - Definition der Farbabstufungen mit chroma.js
-        colorRamp_ger = chroma.scale(['white', 'purple']).correctLightness().classes(numb_classes); //Farbstufenanzhal aus numb_classes für Deaths/Pop
-        colorRamp_bay = chroma.scale(['yellow', 'black']).correctLightness().classes(numb_classes_bay); //Farbstufenanzhal aus numb_classes_bay für Deaths/Pop
+        colorRamp_ger = chroma.scale(['white', 'yellow', 'gray']).correctLightness().classes(numb_classes); //Farbstufenanzhal aus numb_classes für Deaths/Pop
+        colorRamp_bay = chroma.scale(['lightblue', 'darkblue']).gamma(0.5).correctLightness().classes(numb_classes_bay); //Farbstufenanzhal aus numb_classes_bay für Deaths/Pop
         //colorRamp = chroma.scale('OrRd'); //alternativ: stufenlose Variante
 
 
