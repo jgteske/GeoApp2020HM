@@ -122,7 +122,8 @@
         //////KONFIGURIERBAR////////////////
         //Maximalwert für deaths_per_pop der für die Generierung der Choropletenkarte und Legende berücksichtigt wird
         ////Damit können Extremwerte wie z.B. bei Zwergstaaten abgeschwächt werden !!!
-        var max_deaths_per_pop_allowed = 50;
+        var max_deaths_per_pop_allowed = 20;
+        var max_deaths_per_pop_allowed_bay = 10;
         ////////////////////////////////////
         //Anzahl der Farbstufenklassen bzw. Werteklassen für Choropletenkarte und Legende
         var numb_classes = 7;
@@ -286,7 +287,7 @@
             //Maximalzahl der Fälle auf Ganzzahl gerundet
             max_deaths_per_pop = Math.round(max_deaths_per_pop);
             //Begrenzung auf manuell festgelegten Maximalwert für deaths_per_popder der für Chropletenkarte und Legende berücksichtigt wird
-            if (max_deaths_per_pop > max_deaths_per_pop_allowed) { max_deaths_per_pop = max_deaths_per_pop_allowed };
+            if (max_deaths_per_pop > max_deaths_per_pop_allowed_bay) { max_deaths_per_pop = max_deaths_per_pop_allowed_bay };
             /////////////////////////////////////////////////////////////////
             
 
