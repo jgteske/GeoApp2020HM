@@ -101,7 +101,7 @@
         //////////////////////////////////////////////////////////////
         ////ANLAGE DES LEAFLET MAP_OBJEKTES
         var map = L.map('mapid', {
-            center: [50, 10],
+            center: [52, 10],
             zoom: 6,
             layers: [googleSat, googleStreets, osmMapnik, osmMapnikbw]
         });///////////////////////////////////////////////////////////
@@ -252,15 +252,18 @@
         ///Generierung aller Popup-Fenster aus den JSON feature.properties///////////////////////////////
         function onEachFeature(feature, layer) {
             layer.bindPopup(
-                '<h4>Daten:</h4>' +
-                'Bundesland: ' + feature.properties.bl + '<br>' +
+                '<h2>' + feature.properties.bl + '</h2>' +
+                
                 'RS-Code: ' + feature.properties.rs + '<br>' +
-                'Einwohner: ' + feature.properties.ewz + '<br>' +
-                'Fälle: ' + feature.properties.gercases + '<br>' +
-                'Todefälle: ' + feature.properties.gerdeaths + '<br>' +
-                '<br>' +
-                'Infizierte/100.000 EW: ' + (feature.properties.gercases/feature.properties.ewz*per_pop).toFixed(2) + '<br>' +
-                'Tode/100.000 EW: ' + (feature.properties.gerdeaths/feature.properties.ewz*per_pop).toFixed(4) + '<br>'
+                'Einwohner: ' + feature.properties.ewz + ' EW<br>' +
+                
+                '<h3 style="margin-bottom:0rem;">Aktuelle Gesamtdaten zu Covid-19</h3>' +
+                feature.properties.gercases + ' Fälle<br>' +
+                feature.properties.gerdeaths + ' Tote<br>' +
+                '<h3 style="margin-bottom:0rem;">Aktuelle Daten pro ' + per_pop + ' Einwohner: </h3>' +
+                (feature.properties.gercases/feature.properties.ewz*per_pop).toFixed(2) + ' Infizierte / EW<br>' +
+                (feature.properties.gerdeaths/feature.properties.ewz*per_pop).toFixed(4) + ' Tote / EW<br>' +
+                '<p style="font-size: 10px;">'+ 'Letzte Aktualisierung: ' + feature.properties.last_update + '</p><br>'
             );
             //'<h3>Landesdaten:</h3>' + '<pre>' + JSON.stringify(feature.properties, null, ' ').replace(/[\{\}"]/g, '') + '</pre>' + 'Tode/100.000 EW: ' + (feature.properties.gerdeaths/feature.properties.ewz*100000).toFixed(4) + '<br>');
             
