@@ -109,6 +109,7 @@
 
         //Initialisierung der Legende und Positionierung
         var legend = L.control({ position: 'bottomright' });
+        var legend_bay_deaths = L.control({ position: 'bottomright'});
 
 
 
@@ -293,7 +294,6 @@
             geojsonLayer_bay_deaths.setStyle(style_bay);
             
             ///Methodenaufruf zur Generierung der Legende für das L-Mapobjekt
-            legend.addTo(map);
 
         }/////Ende der Funktion handleJson_bay_deaths//////////////////////////////////////////////
 
@@ -423,7 +423,8 @@
 
         ////////////////////////////////////////////////////////////////////////////
         ////Defintion der Legende Fallzahlen pro 100.000 Einwohner bei Methode OnAdd mit dynamisccher Generierung der Klassenstufen
-
+        
+        // --- Legende für Tode in Deutschland --- //
         legend.onAdd = function (map) {
 
             grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
@@ -447,6 +448,34 @@
                     grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
             }
             div.innerHTML += '<p style="font-size: 10px">Für die Aktualität der Daten <br> siehe einzelne Bundesländer!</p>';
+
+            return div;
+        };
+
+        // --- Legende für Tode in Bayern --- //
+        legend_bay_deaths.onAdd = function (map) {
+
+            grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
+
+            //Generierung der Zahlenwerte der Klassen für die Legende
+            for (var i = 0; i < numb_classes; i++) {
+                grades_arr.push(Math.round(max_deaths_per_pop * (classwidth_between_fac * i)));
+            }////////////////////////////////////////////////////////
+
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades_arr,
+                labels = [];
+            div.innerHTML += '<h4>Legende</h4>';
+            div.innerHTML += '<p>Tode pro ' + per_pop_bay + ' EW:</p>';
+
+            ////Loop through our density intervals and generate a label with a colored square for each interval
+            ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
+            for (var i = 0; i < grades_arr.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + colorRamp_bay((i / numb_classes_bay)) + '"></i> ' +
+                    grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
+            }
+            div.innerHTML += '<p style="font-size: 10px">Für die Aktualität der Daten <br> siehe einzelne Regionen!</p>';
 
             return div;
         };
