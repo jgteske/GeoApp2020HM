@@ -157,7 +157,7 @@
 
         ///NEU CHROMA.JS - Definition der Farbabstufungen mit chroma.js
         colorRamp = chroma.scale(['white', 'yellow','red','black']).correctLightness().classes(numb_classes); //Farbstufenanzhal aus numb_classes für Deaths/Pop
-        colorRamp1 = chroma.scale(['white', 'purple']).correctLightness().classes(numb_classes); //Farbstufenanzhal aus numb_classes für Cases/Pop
+        colorRamp1 = chroma.scale(['white', 'purple']).correctLightness().classes(numb_classes_cases); //Farbstufenanzhal aus numb_classes_cases für Cases/Pop
         //colorRamp = chroma.scale('OrRd'); //alternativ: stufenlose Variante
 
 
@@ -354,7 +354,7 @@
 
         ///Methodenaufruf zur Integration des GeoJSON Layers in das L-Mapobjekt
         map.addLayer(geojsonLayer);
-        map.addLayer(geojsonLayer1);
+        //map.addLayer(geojsonLayer1);
         ///////////////////////////////////////////////////////////////////////
 
 
