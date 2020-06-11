@@ -312,7 +312,7 @@
                 grades_arr,
                 labels = [];
             div.innerHTML += '<h4>Legende</h4>';
-            div.innerHTML += '<p>Deaths/Pop: </p>';
+            div.innerHTML += '<p>Tode pro ' + per_pop + ' EW:</p>';
 
             ////Loop through our density intervals and generate a label with a colored square for each interval
             ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
@@ -321,6 +321,7 @@
                     '<i style="background:' + colorRamp_ger((i / numb_classes)) + '"></i> ' +
                     grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
             }
+            div.innerHTML += '<p style="font-size: 10px">Für die Aktualität der Daten <br> siehe einzelne Bundesländer!</p>';
 
             return div;
         };
