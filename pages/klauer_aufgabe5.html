@@ -119,6 +119,10 @@
         var max_deaths = 0;
         var max_deaths_per_pop = 0;
 
+        var deaths_per_pop_bay = 0;
+        var max_deaths_bay = 0;
+        var max_deaths_per_pop_bay = 0;
+
         //////KONFIGURIERBAR////////////////
         //Maximalwert für deaths_per_pop der für die Generierung der Choropletenkarte und Legende berücksichtigt wird
         ////Damit können Extremwerte wie z.B. bei Zwergstaaten abgeschwächt werden !!!
@@ -134,8 +138,10 @@
         var classwidth_between_fac = 1 / numb_classes;
         //////Initialisierung Array für Fallzahlen zu den Einzelobjekten
         var deaths_per_object_arr = [];
+        var deaths_per_object_arr_bay = [];
         //////Initialisierung Array für Verhältniszahl aus Fallzahlen zu Bevölkerung der Einzelobjekte    
         var all_deaths_per_pop_arr = [];
+        var all_deaths_per_pop_arr_bay = [];
         //////////////////////////////////////////////////////
 
         // Variable pro Einwohnerzahl/Bevölkerungszahl ///////
@@ -268,28 +274,28 @@
             for (var i = 0; i < obj_count; i++) {
 
                 if (js_objects_of_json_string[i]['krs_ewz'] > 0) {
-                    deaths_per_pop = (js_objects_of_json_string[i]['baydeaths'] / js_objects_of_json_string[i]['krs_ewz']) * per_pop_bay;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+                    deaths_per_pop_bay = (js_objects_of_json_string[i]['baydeaths'] / js_objects_of_json_string[i]['krs_ewz']) * per_pop_bay;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
 			
                 }
 
                 /////Arrays mit den Objektdaten füllen/////////////////////////////////////
-                deaths_per_object_arr.push(js_objects_of_json_string[i]['baydeaths']);
-                all_deaths_per_pop_arr.push(deaths_per_pop);      
+                deaths_per_object_arr_bay.push(js_objects_of_json_string[i]['baydeaths']);
+                all_deaths_per_pop_arr_bay.push(deaths_per_pop_bay);      
                 
             }////////////////////////////////////////////////////////////////////////////////////////////
             
 
             /////Maximalwerte der Fälle und der Verhälniszahl Fälle pro 100.000 EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
-            max_deaths = Math.max.apply(null, deaths_per_object_arr);
-            max_deaths_per_pop = Math.max.apply(null, all_deaths_per_pop_arr);
+            max_deaths_bay = Math.max.apply(null, deaths_per_object_arr_bay);
+            max_deaths_per_pop_bay = Math.max.apply(null, all_deaths_per_pop_arr_bay);
 
             
             //Maximalzahl der Fälle auf Ganzzahl gerundet
-            max_deaths_per_pop = Math.round(max_deaths_per_pop);
+            max_deaths_per_pop_bay = Math.round(max_deaths_per_pop_bay);
             //Begrenzung auf manuell festgelegten Maximalwert für deaths_per_popder der für Chropletenkarte und Legende berücksichtigt wird
-            if (max_deaths_per_pop > max_deaths_per_pop_allowed_bay) { max_deaths_per_pop = max_deaths_per_pop_allowed_bay };
+            if (max_deaths_per_pop_bay > max_deaths_per_pop_allowed_bay) { max_deaths_per_pop_bay = max_deaths_per_pop_allowed_bay };
             /////////////////////////////////////////////////////////////////
-            
+            console.log(max_deaths_per_pop_bay);
 
             ///Methodenaufruf Styledefinition des GeoJSON Layers
             geojsonLayer_bay_deaths.setStyle(style_bay);
@@ -328,9 +334,9 @@
         function style_bay(feature) {
 
         //Berechnung der Todefälle pro 100.000 Einwohnwer aus Feature Properties gerdeaths und ewz eines Landes bei dem Sytlingprozess jedes Polygons
-        deaths_per_pop = (feature.properties.baydeaths / feature.properties.krs_ewz) * per_pop_bay;
+        deaths_per_pop_bay = (feature.properties.baydeaths / feature.properties.krs_ewz) * per_pop_bay;
         
-        ratio_deaths_per_pop = deaths_per_pop / max_deaths_per_pop;
+        ratio_deaths_per_pop_bay = deaths_per_pop_bay / max_deaths_per_pop_bay;
 
         //class_range = (max_deaths_per_pop)/numb_classes;
         //round_deaths_per_pop = Math.round(deaths_per_pop);
@@ -338,7 +344,7 @@
 
         return {
             ////Generierung der Polygonfärbung eines Objektes über Funktion mit Chroma.js
-            fillColor: colorRamp_bay(ratio_deaths_per_pop),                  ///(ratio_deaths_per_pop+(classwidth_between_fac)), /// --Alternative, geht gut wenn nur: chroma.scale kontinuierlich ohne Klassen
+            fillColor: colorRamp_bay(ratio_deaths_per_pop_bay),                  ///(ratio_deaths_per_pop+(classwidth_between_fac)), /// --Alternative, geht gut wenn nur: chroma.scale kontinuierlich ohne Klassen
 
             weight: 2,
             opacity: 1,
@@ -439,7 +445,7 @@
                 grades_arr,
                 labels = [];
             div.innerHTML += '<h4>Legende</h4>';
-            div.innerHTML += '<p>Tode pro ' + per_pop + ' EW:</p>';
+            div.innerHTML += '<p>Tote pro ' + per_pop + ' EW:</p>';
 
             ////Loop through our density intervals and generate a label with a colored square for each interval
             ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
@@ -460,14 +466,14 @@
 
             //Generierung der Zahlenwerte der Klassen für die Legende
             for (var i = 0; i < numb_classes_bay; i++) {
-                grades_arr.push(Math.round(max_deaths_per_pop * (classwidth_between_fac * i)));
+                grades_arr.push(Math.round(max_deaths_per_pop_bay * (classwidth_between_fac * i)));
             }////////////////////////////////////////////////////////
 
             var div = L.DomUtil.create('div', 'info legend'),
                 grades_arr,
                 labels = [];
             div.innerHTML += '<h4>Legende</h4>';
-            div.innerHTML += '<p>Tode pro ' + per_pop_bay + ' EW:</p>';
+            div.innerHTML += '<p>Tote pro ' + per_pop_bay + ' EW:</p>';
 
             ////Loop through our density intervals and generate a label with a colored square for each interval
             ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
