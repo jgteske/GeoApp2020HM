@@ -487,9 +487,11 @@
             if (overlayMaps.name === 'Covid19 Tode - Region Bayern') {
             this.removeControl(legend);
             legend_bay_deaths.addTo(this);
+            map.fitBounds(geojsonLayer_bay_deaths.getBounds());
             } else {
             this.removeControl(legend_bay_deaths);
             legend.addTo(this);
+            map.fitBounds(geojsonLayer_ger_deaths.getBounds());
             }
         });
 
