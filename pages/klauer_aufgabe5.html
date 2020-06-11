@@ -111,6 +111,7 @@
         var legend = L.control({ position: 'bottomright' });
 
 
+
         ///////////////////////////////////////////////////////
         ///Variableninitialisierung für Statistikberechnungen
         var deaths_per_pop = 0;
@@ -124,6 +125,7 @@
         ////////////////////////////////////
         //Anzahl der Farbstufenklassen bzw. Werteklassen für Choropletenkarte und Legende
         var numb_classes = 7;
+        var numb_classes_bay = 5;
         ////////////////////////////////////
 
         //Klassenbreite im Range von 0-1 abhängig von Klassenzahl
@@ -136,11 +138,13 @@
 
         // Variable pro Einwohnerzahl/Bevölkerungszahl ///////
         var per_pop = 100000;
+        var per_pop_bay = 10000;
         //////////////////////////////////////////////////////
 
 
         ///NEU CHROMA.JS - Definition der Farbabstufungen mit chroma.js
         colorRamp_ger = chroma.scale(['white', 'purple']).correctLightness().classes(numb_classes); //Farbstufenanzhal aus numb_classes für Deaths/Pop
+        colorRamp_bay = chroma.scale(['yellow', 'black']).correctLightness().classes(numb_classes_bay); //Farbstufenanzhal aus numb_classes_bay für Deaths/Pop
         //colorRamp = chroma.scale('OrRd'); //alternativ: stufenlose Variante
 
 
@@ -221,6 +225,79 @@
         }/////Ende der Funktion handleJson_ger_deaths//////////////////////////////////////////////
 
 
+        // --- Totoe pro EWZ in den den einzelnen Kreisen Bayerns --- //
+        var geojsonLayer_bay_deaths = new L.GeoJSON(null, { onEachFeature: onEachFeature_bay_deaths });
+
+        $.ajax({
+            url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
+            data: {
+                version: '1.0.0',
+                request: 'GetFeature',
+                service: 'WFS',
+                typeName: 'teske:covid19_bay_krs',
+                maxFeatures: '2000',
+                outputFormat: 'application/json'
+            },
+            dataType: 'json',
+            jsonpCallback: 'getJson',
+            success: handleJson_bay_deaths
+        });
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        /////Funktion handleJson mit Generierung der Properties Arrays und statistischen Vorbrechnungen
+        function handleJson_bay_deaths(data) {
+
+            //console.log(data);
+            geojsonLayer_bay_deaths.addData(data);
+
+
+            /////Stringkonvertierung der Einzelobjekt Properties der einzelnen Länder
+            jproperties = JSON.stringify(data.features.map(function (el) { return el.properties; }));
+            ////Parsen der Zeichenkette des JSON in JavaScript Objekt
+            js_objects_of_json_string = JSON.parse(jproperties);
+            /////////////////////////////////////////////////////////////////////////
+
+            ///Anzahl der Einzelobjekte bzw. Länder ermitteln
+            obj_count = js_objects_of_json_string.length;
+
+
+            /////For-Schleife mit der hier Todesfälle (gerdeaths) und Bevölkerungszahl (ewz) ausgelesen werden
+            for (var i = 0; i < obj_count; i++) {
+
+                if (js_objects_of_json_string[i]['krs_ewz'] > 0) {
+                    deaths_per_pop = (js_objects_of_json_string[i]['baydeaths'] / js_objects_of_json_string[i]['krs_ewz']) * per_pop_bay;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+			
+                }
+
+                /////Arrays mit den Objektdaten füllen/////////////////////////////////////
+                deaths_per_object_arr.push(js_objects_of_json_string[i]['baydeaths']);
+                all_deaths_per_pop_arr.push(deaths_per_pop);      
+                
+            }////////////////////////////////////////////////////////////////////////////////////////////
+            
+
+            /////Maximalwerte der Fälle und der Verhälniszahl Fälle pro 100.000 EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
+            max_deaths = Math.max.apply(null, deaths_per_object_arr);
+            max_deaths_per_pop = Math.max.apply(null, all_deaths_per_pop_arr);
+
+            
+            //Maximalzahl der Fälle auf Ganzzahl gerundet
+            max_deaths_per_pop = Math.round(max_deaths_per_pop);
+            //Begrenzung auf manuell festgelegten Maximalwert für deaths_per_popder der für Chropletenkarte und Legende berücksichtigt wird
+            if (max_deaths_per_pop > max_deaths_per_pop_allowed) { max_deaths_per_pop = max_deaths_per_pop_allowed };
+            /////////////////////////////////////////////////////////////////
+            
+
+            ///Methodenaufruf Styledefinition des GeoJSON Layers
+            geojsonLayer_bay_deaths.setStyle(style_bay);
+            
+            ///Methodenaufruf zur Generierung der Legende für das L-Mapobjekt
+            legend.addTo(map);
+
+        }/////Ende der Funktion handleJson_bay_deaths//////////////////////////////////////////////
+
+
 
         ///function Choropleth Map styling ///////////////////////////////
         function style_ger(feature) {
@@ -241,10 +318,34 @@
                 opacity: 1,
                 color: 'black',
                 dashArray: '3',
-                fillOpacity: 0.7
+                fillOpacity: 1
 
             }
 
+        }////////////////////////////////////////////////
+
+        function style_bay(feature) {
+
+        //Berechnung der Todefälle pro 100.000 Einwohnwer aus Feature Properties gerdeaths und ewz eines Landes bei dem Sytlingprozess jedes Polygons
+        deaths_per_pop = (feature.properties.baydeaths / feature.properties.krs_ewz) * per_pop_bay;
+        
+        ratio_deaths_per_pop = deaths_per_pop / max_deaths_per_pop;
+
+        //class_range = (max_deaths_per_pop)/numb_classes;
+        //round_deaths_per_pop = Math.round(deaths_per_pop);
+        
+
+        return {
+            ////Generierung der Polygonfärbung eines Objektes über Funktion mit Chroma.js
+            fillColor: colorRamp_bay(ratio_deaths_per_pop),                  ///(ratio_deaths_per_pop+(classwidth_between_fac)), /// --Alternative, geht gut wenn nur: chroma.scale kontinuierlich ohne Klassen
+
+            weight: 2,
+            opacity: 1,
+            color: 'black',
+            dashArray: '3',
+            fillOpacity: 1
+
+            }
         }////////////////////////////////////////////////
 
 
@@ -260,7 +361,7 @@
                 '<h3 style="margin-bottom:0rem;">Aktuelle Gesamtdaten zu Covid-19</h3>' +
                 feature.properties.gercases + ' Fälle<br>' +
                 feature.properties.gerdeaths + ' Tote<br>' +
-                '<h3 style="margin-bottom:0rem;">Aktuelle Daten pro ' + per_pop + ' Einwohner: </h3>' +
+                '<h3 style="margin-bottom:0rem;">Aktuelle Daten pro ' + per_pop_bay + ' Einwohner: </h3>' +
                 (feature.properties.gercases/feature.properties.ewz*per_pop).toFixed(2) + ' Infizierte / EW<br>' +
                 (feature.properties.gerdeaths/feature.properties.ewz*per_pop).toFixed(4) + ' Tote / EW<br>' +
                 '<p style="font-size: 10px;">'+ 'Letzte Aktualisierung: ' + feature.properties.last_update + '</p><br>'
@@ -270,10 +371,32 @@
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////
 
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        ///Generierung aller Popup-Fenster aus den JSON feature.properties///////////////////////////////
+        function onEachFeature_bay_deaths(feature, layer) {
+            layer.bindPopup(
+                '<h2>' + feature.properties.gen + '</h2>' +
+                
+                'Kreis-ID: ' + feature.properties.id + '<br>' +
+                'Kreis Einwohner: ' + feature.properties.krs_ewz + ' EW<br>' +
+                
+                '<h3 style="margin-bottom:0rem;">Aktuelle Gesamtdaten zu Covid-19</h3>' +
+                feature.properties.baycases + ' Fälle<br>' +
+                feature.properties.baydeaths + ' Tote<br>' +
+                '<h3 style="margin-bottom:0rem;">Aktuelle Daten pro ' + per_pop_bay + ' Einwohner: </h3>' +
+                (feature.properties.baycases/feature.properties.krs_ewz*per_pop_bay).toFixed(2) + ' Infizierte / EW<br>' +
+                (feature.properties.baydeaths/feature.properties.krs_ewz*per_pop_bay).toFixed(4) + ' Tote / EW<br>' +
+                '<p style="font-size: 10px;">'+ 'Letzte Aktualisierung: ' + feature.properties.last_update + '</p><br>'
+            );
+            //'<h3>Landesdaten:</h3>' + '<pre>' + JSON.stringify(feature.properties, null, ' ').replace(/[\{\}"]/g, '') + '</pre>' + 'Tode/100.000 EW: ' + (feature.properties.gerdeaths/feature.properties.ewz*100000).toFixed(4) + '<br>');
+            
+        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////
 
 
         ///Methodenaufruf zur Integration des GeoJSON Layers in das L-Mapobjekt
         map.addLayer(geojsonLayer_ger_deaths);
+        //map.addLayer(geojsonLayer_bay_deaths);
         ///////////////////////////////////////////////////////////////////////
 
 
@@ -289,9 +412,11 @@
 
         var overlayMaps = {
             "Covid19 Tode - Bundesländer": geojsonLayer_ger_deaths,
+            "Covid19 Tode - Region Bayern": geojsonLayer_bay_deaths
         };
 
         L.control.layers(baseMaps, overlayMaps).addTo(map);
+        //L.control.layers(overlayMaps).addTo(map); // To activate later
         ///////////////////////////////////////////////////////////////////
 
 
