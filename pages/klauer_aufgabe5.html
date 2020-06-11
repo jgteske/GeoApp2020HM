@@ -147,7 +147,9 @@
 
         //////////////////////////////////////////////////////////////////////////
         ////////Covid Data via WFS / GeoJSON Import Spezifikationen///////////////
-        var geojsonLayer_ger = new L.GeoJSON(null, { onEachFeature: onEachFeature });
+
+        // --- Totoe pro EWZ in den einzelnen Bundesländern --- //
+        var geojsonLayer_ger_deaths = new L.GeoJSON(null, { onEachFeature: onEachFeature_ger_deaths });
 
         $.ajax({
             url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
@@ -161,18 +163,16 @@
             },
             dataType: 'json',
             jsonpCallback: 'getJson',
-            success: handleJson_ger
+            success: handleJson_ger_deaths
         });
         //////////////////////////////////////////////////////////////////////////
 
-
-
         //////////////////////////////////////////////////////////////////////////
         /////Funktion handleJson mit Generierung der Properties Arrays und statistischen Vorbrechnungen
-        function handleJson_ger(data) {
+        function handleJson_ger_deaths(data) {
 
             //console.log(data);
-            geojsonLayer_ger.addData(data);
+            geojsonLayer_ger_deaths.addData(data);
 
 
             /////Stringkonvertierung der Einzelobjekt Properties der einzelnen Länder
@@ -213,12 +213,12 @@
             
 
             ///Methodenaufruf Styledefinition des GeoJSON Layers
-            geojsonLayer_ger.setStyle(style_ger);
+            geojsonLayer_ger_deaths.setStyle(style_ger);
             
             ///Methodenaufruf zur Generierung der Legende für das L-Mapobjekt
             legend.addTo(map);
 
-        }/////Ende der Funktion handleJson_ger//////////////////////////////////////////////
+        }/////Ende der Funktion handleJson_ger_deaths//////////////////////////////////////////////
 
 
 
@@ -250,7 +250,7 @@
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         ///Generierung aller Popup-Fenster aus den JSON feature.properties///////////////////////////////
-        function onEachFeature(feature, layer) {
+        function onEachFeature_ger_deaths(feature, layer) {
             layer.bindPopup(
                 '<h2>' + feature.properties.bl + '</h2>' +
                 
@@ -273,7 +273,7 @@
 
 
         ///Methodenaufruf zur Integration des GeoJSON Layers in das L-Mapobjekt
-        map.addLayer(geojsonLayer_ger);
+        map.addLayer(geojsonLayer_ger_deaths);
         ///////////////////////////////////////////////////////////////////////
 
 
@@ -288,7 +288,7 @@
         };
 
         var overlayMaps = {
-            "Covid19 - Bundesländer": geojsonLayer_ger,
+            "Covid19 Tode - Bundesländer": geojsonLayer_ger_deaths,
         };
 
         L.control.layers(baseMaps, overlayMaps).addTo(map);
