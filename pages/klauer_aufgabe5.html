@@ -481,6 +481,8 @@
             return div;
         };
 
+        // Source:  https://gis.stackexchange.com/questions/267605/leaflet-api-select-one-overlay-at-a-time-like-base-layers
+        //          https://gis.stackexchange.com/questions/76113/dynamically-set-zoom-level-based-on-a-bounding-box
         // --- Hinzufügen der aktiven Legende -- //
             map.on('baselayerchange', function (overlayMaps) {
             // Switch to the Population legend...
