@@ -127,10 +127,10 @@
         //Maximalwert für deaths_per_pop der für die Generierung der Choropletenkarte und Legende berücksichtigt wird
         ////Damit können Extremwerte wie z.B. bei Zwergstaaten abgeschwächt werden !!!
         var max_deaths_per_pop_allowed = 20;
-        var max_deaths_per_pop_allowed_bay = 10;
+        var max_deaths_per_pop_allowed_bay = 8;
         ////////////////////////////////////
         //Anzahl der Farbstufenklassen bzw. Werteklassen für Choropletenkarte und Legende
-        var numb_classes = 7;
+        var numb_classes = 5;
         var numb_classes_bay = 5;
         ////////////////////////////////////
 
@@ -151,8 +151,8 @@
 
 
         ///NEU CHROMA.JS - Definition der Farbabstufungen mit chroma.js
-        colorRamp_ger = chroma.scale(['white', 'yellow', 'gray']).correctLightness().classes(numb_classes); //Farbstufenanzhal aus numb_classes für Deaths/Pop
-        colorRamp_bay = chroma.scale(['lightblue', 'darkblue']).gamma(0.5).correctLightness().classes(numb_classes_bay); //Farbstufenanzhal aus numb_classes_bay für Deaths/Pop
+        colorRamp_death = chroma.scale(['gray', 'yellow']).gamma(0.75).correctLightness().classes(numb_classes); //Farbstufenanzhal aus numb_classes für Deaths/Pop
+        //colorRamp_cases = chroma.scale(['lightblue', 'darkblue']).gamma(0.5).correctLightness().classes(numb_classes_bay); //Farbstufenanzhal aus numb_classes_bay für Deaths/Pop
         //colorRamp = chroma.scale('OrRd'); //alternativ: stufenlose Variante
 
 
@@ -319,7 +319,7 @@
 
             return {
                 ////Generierung der Polygonfärbung eines Objektes über Funktion mit Chroma.js
-                fillColor: colorRamp_ger(ratio_deaths_per_pop),                  ///(ratio_deaths_per_pop+(classwidth_between_fac)), /// --Alternative, geht gut wenn nur: chroma.scale kontinuierlich ohne Klassen
+                fillColor: colorRamp_death(ratio_deaths_per_pop),                  ///(ratio_deaths_per_pop+(classwidth_between_fac)), /// --Alternative, geht gut wenn nur: chroma.scale kontinuierlich ohne Klassen
 
                 weight: 2,
                 opacity: 1,
@@ -344,7 +344,7 @@
 
         return {
             ////Generierung der Polygonfärbung eines Objektes über Funktion mit Chroma.js
-            fillColor: colorRamp_bay(ratio_deaths_per_pop_bay),                  ///(ratio_deaths_per_pop+(classwidth_between_fac)), /// --Alternative, geht gut wenn nur: chroma.scale kontinuierlich ohne Klassen
+            fillColor: colorRamp_death(ratio_deaths_per_pop_bay),                  ///(ratio_deaths_per_pop+(classwidth_between_fac)), /// --Alternative, geht gut wenn nur: chroma.scale kontinuierlich ohne Klassen
 
             weight: 2,
             opacity: 1,
@@ -451,7 +451,7 @@
             ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
             for (var i = 0; i < grades_arr.length; i++) {
                 div.innerHTML +=
-                    '<i style="background:' + colorRamp_ger((i / numb_classes)) + '"></i> ' +
+                    '<i style="background:' + colorRamp_death((i / numb_classes)) + '"></i> ' +
                     grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
             }
             div.innerHTML += '<p style="font-size: 10px">Für die Aktualität der Daten <br> siehe einzelne Bundesländer!</p>';
@@ -479,7 +479,7 @@
             ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
             for (var i = 0; i < grades_arr.length; i++) {
                 div.innerHTML +=
-                    '<i style="background:' + colorRamp_bay((i / numb_classes_bay)) + '"></i> ' +
+                    '<i style="background:' + colorRamp_death((i / numb_classes_bay)) + '"></i> ' +
                     grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
             }
             div.innerHTML += '<p style="font-size: 10px">Für die Aktualität der Daten <br> siehe einzelne Regionen!</p>';
