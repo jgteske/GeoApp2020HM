@@ -127,7 +127,7 @@
         //Maximalwert für deaths_per_pop der für die Generierung der Choropletenkarte und Legende berücksichtigt wird
         ////Damit können Extremwerte wie z.B. bei Zwergstaaten abgeschwächt werden !!!
         var max_deaths_per_pop_allowed = 20;
-        var max_deaths_per_pop_allowed_bay = 8;
+        var max_deaths_per_pop_allowed_bay = 60;
         ////////////////////////////////////
         //Anzahl der Farbstufenklassen bzw. Werteklassen für Choropletenkarte und Legende
         var numb_classes = 5;
@@ -146,7 +146,7 @@
 
         // Variable pro Einwohnerzahl/Bevölkerungszahl ///////
         var per_pop = 100000;
-        var per_pop_bay = 10000;
+        var per_pop_bay = 100000;
         //////////////////////////////////////////////////////
 
 
@@ -368,9 +368,9 @@
                 '<h3 style="margin-bottom:0rem;">Aktuelle Gesamtdaten zu Covid-19</h3>' +
                 feature.properties.gercases + ' Fälle<br>' +
                 feature.properties.gerdeaths + ' Tote<br>' +
-                '<h3 style="margin-bottom:0rem;">Aktuelle Daten pro ' + per_pop_bay + ' Einwohner: </h3>' +
-                (feature.properties.gercases/feature.properties.ewz*per_pop).toFixed(2) + ' Infizierte / EW<br>' +
-                (feature.properties.gerdeaths/feature.properties.ewz*per_pop).toFixed(4) + ' Tote / EW<br>' +
+                '<h3 style="margin-bottom:0rem;">Aktuelle Daten pro ' + per_pop_bay + ' Einwohner (gerundet): </h3>' +
+                Math.round(feature.properties.gercases/feature.properties.ewz*per_pop) + ' Infizierte / EW<br>' +
+                Math.round(feature.properties.gerdeaths/feature.properties.ewz*per_pop) + ' Tote / EW<br>' +
                 '<p style="font-size: 10px;">'+ 'Letzte Aktualisierung: ' + feature.properties.last_update + '</p><br>'
             );
             //'<h3>Landesdaten:</h3>' + '<pre>' + JSON.stringify(feature.properties, null, ' ').replace(/[\{\}"]/g, '') + '</pre>' + 'Tode/100.000 EW: ' + (feature.properties.gerdeaths/feature.properties.ewz*100000).toFixed(4) + '<br>');
@@ -390,9 +390,9 @@
                 '<h3 style="margin-bottom:0rem;">Aktuelle Gesamtdaten zu Covid-19</h3>' +
                 feature.properties.baycases + ' Fälle<br>' +
                 feature.properties.baydeaths + ' Tote<br>' +
-                '<h3 style="margin-bottom:0rem;">Aktuelle Daten pro ' + per_pop_bay + ' Einwohner: </h3>' +
-                (feature.properties.baycases/feature.properties.krs_ewz*per_pop_bay).toFixed(2) + ' Infizierte / EW<br>' +
-                (feature.properties.baydeaths/feature.properties.krs_ewz*per_pop_bay).toFixed(4) + ' Tote / EW<br>' +
+                '<h3 style="margin-bottom:0rem;">Aktuelle Daten pro ' + per_pop_bay + ' Einwohner (gerundet): </h3>' +
+                Math.round(feature.properties.baycases/feature.properties.krs_ewz*per_pop_bay) + ' Infizierte / EW<br>' +
+                Math.round(feature.properties.baydeaths/feature.properties.krs_ewz*per_pop_bay) + ' Tote / EW<br>' +
                 '<p style="font-size: 10px;">'+ 'Letzte Aktualisierung: ' + feature.properties.last_update + '</p><br>'
             );
             //'<h3>Landesdaten:</h3>' + '<pre>' + JSON.stringify(feature.properties, null, ' ').replace(/[\{\}"]/g, '') + '</pre>' + 'Tode/100.000 EW: ' + (feature.properties.gerdeaths/feature.properties.ewz*100000).toFixed(4) + '<br>');
