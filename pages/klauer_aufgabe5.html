@@ -183,7 +183,7 @@
         ////////Covid Data via WFS / GeoJSON Import Spezifikationen///////////////
 
         // --- Totoe pro EWZ in den einzelnen Bundesländern --- //
-        var geojsonLayer_ger_deaths = new L.GeoJSON(null, { onEachFeature: onEachFeature_ger_deaths });
+        var geojsonLayer_ger_deaths = new L.GeoJSON(null, { onEachFeature: onEachFeature_ger });
 
         $.ajax({
             url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
@@ -256,7 +256,7 @@
 
 
         // --- Totoe pro EWZ in den den einzelnen Kreisen Bayerns --- //
-        var geojsonLayer_bay_deaths = new L.GeoJSON(null, { onEachFeature: onEachFeature_bay_deaths });
+        var geojsonLayer_bay_deaths = new L.GeoJSON(null, { onEachFeature: onEachFeature_bay });
 
         $.ajax({
             url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
@@ -327,7 +327,7 @@
 
 
         // --- Cases pro EWZ in den einzelnen Bundesländern --- //
-        var geojsonLayer_ger_cases = new L.GeoJSON(null, { onEachFeature: onEachFeature_ger_deaths });
+        var geojsonLayer_ger_cases = new L.GeoJSON(null, { onEachFeature: onEachFeature_ger });
 
         $.ajax({
             url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
@@ -472,7 +472,7 @@
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         ///Generierung aller Popup-Fenster aus den JSON feature.properties///////////////////////////////
-        function onEachFeature_ger_deaths(feature, layer) {
+        function onEachFeature_ger(feature, layer) {
             layer.bindPopup(
                 '<h2>' + feature.properties.bl + '</h2>' +
                 
@@ -494,7 +494,7 @@
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         ///Generierung aller Popup-Fenster aus den JSON feature.properties///////////////////////////////
-        function onEachFeature_bay_deaths(feature, layer) {
+        function onEachFeature_bay(feature, layer) {
             layer.bindPopup(
                 '<h2>' + feature.properties.gen + '</h2>' +
                 
