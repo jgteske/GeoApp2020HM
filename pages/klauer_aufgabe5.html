@@ -124,6 +124,7 @@
         var legend = L.control({ position: 'bottomright' });
         var legend_bay_deaths = L.control({ position: 'bottomright'});
         var legend_cases = L.control({ position: 'bottomright'});
+        var legend_bay_cases = L.control({ position: 'bottomright'});
 
 
 
@@ -141,17 +142,23 @@
         var max_deaths_bay = 0;
         var max_deaths_per_pop_bay = 0;
 
+        var cases_per_pop_bay = 0;
+        var max_cases_bay = 0;
+        var max_cases_per_pop_bay = 0;
+
         //////KONFIGURIERBAR////////////////
         //Maximalwert für deaths_per_pop der für die Generierung der Choropletenkarte und Legende berücksichtigt wird
         ////Damit können Extremwerte wie z.B. bei Zwergstaaten abgeschwächt werden !!!
         var max_deaths_per_pop_allowed = 20;
         var max_deaths_per_pop_allowed_bay = 60;
         var max_cases_per_pop_allowed = 500;
+        var max_cases_per_pop_allowed_bay = 800;
         ////////////////////////////////////
         //Anzahl der Farbstufenklassen bzw. Werteklassen für Choropletenkarte und Legende
         var numb_classes = 5;
         var numb_classes_bay = 5;
         var numb_classes_cases = 7;
+        var numb_classes_cases_bay = 7;
         ////////////////////////////////////
 
         //Klassenbreite im Range von 0-1 abhängig von Klassenzahl
@@ -160,10 +167,12 @@
         var deaths_per_object_arr = [];
         var deaths_per_object_arr_bay = [];
         var cases_per_object_arr = [];
+        var cases_per_object_arr_bay = [];
         //////Initialisierung Array für Verhältniszahl aus Fallzahlen zu Bevölkerung der Einzelobjekte    
         var all_deaths_per_pop_arr = [];
         var all_deaths_per_pop_arr_bay = [];
         var all_cases_per_pop_arr = [];
+        var all_cases_per_pop_arr_bay = [];
         //////////////////////////////////////////////////////
 
         // Variable pro Einwohnerzahl/Bevölkerungszahl ///////
@@ -255,7 +264,7 @@
         }/////Ende der Funktion handleJson_ger_deaths//////////////////////////////////////////////
 
 
-        // --- Totoe pro EWZ in den den einzelnen Kreisen Bayerns --- //
+        // --- Tote pro EWZ in den den einzelnen Kreisen Bayerns --- //
         var geojsonLayer_bay_deaths = new L.GeoJSON(null, { onEachFeature: onEachFeature_bay });
 
         $.ajax({
@@ -317,7 +326,6 @@
             //Begrenzung auf manuell festgelegten Maximalwert für deaths_per_popder der für Chropletenkarte und Legende berücksichtigt wird
             if (max_deaths_per_pop_bay > max_deaths_per_pop_allowed_bay) { max_deaths_per_pop_bay = max_deaths_per_pop_allowed_bay };
             /////////////////////////////////////////////////////////////////
-            console.log(max_deaths_per_pop_bay);
 
             ///Methodenaufruf Styledefinition des GeoJSON Layers
             geojsonLayer_bay_deaths.setStyle(style_bay);
@@ -397,6 +405,76 @@
         }/////Ende der Funktion handleJson_ger_cases//////////////////////////////////////////////
 
 
+        // --- Fälle pro EWZ in den den einzelnen Kreisen Bayerns --- //
+        var geojsonLayer_bay_cases = new L.GeoJSON(null, { onEachFeature: onEachFeature_bay });
+
+        $.ajax({
+            url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
+            data: {
+                version: '1.0.0',
+                request: 'GetFeature',
+                service: 'WFS',
+                typeName: 'teske:covid19_bay_krs',
+                maxFeatures: '2000',
+                outputFormat: 'application/json'
+            },
+            dataType: 'json',
+            jsonpCallback: 'getJson',
+            success: handleJson_bay_cases
+        });
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        /////Funktion handleJson mit Generierung der Properties Arrays und statistischen Vorbrechnungen
+        function handleJson_bay_cases(data) {
+
+            //console.log(data);
+            geojsonLayer_bay_cases.addData(data);
+
+
+            /////Stringkonvertierung der Einzelobjekt Properties der einzelnen Länder
+            jproperties = JSON.stringify(data.features.map(function (el) { return el.properties; }));
+            ////Parsen der Zeichenkette des JSON in JavaScript Objekt
+            js_objects_of_json_string = JSON.parse(jproperties);
+            /////////////////////////////////////////////////////////////////////////
+
+            ///Anzahl der Einzelobjekte bzw. Länder ermitteln
+            obj_count = js_objects_of_json_string.length;
+
+
+            /////For-Schleife mit der hier Todesfälle (baycases) und Bevölkerungszahl (krs_ewz) ausgelesen werden
+            for (var i = 0; i < obj_count; i++) {
+
+                if (js_objects_of_json_string[i]['krs_ewz'] > 0) {
+                    cases_per_pop_bay = (js_objects_of_json_string[i]['baycases'] / js_objects_of_json_string[i]['krs_ewz']) * per_pop_bay;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+			
+                }
+
+                /////Arrays mit den Objektdaten füllen/////////////////////////////////////
+                cases_per_object_arr_bay.push(js_objects_of_json_string[i]['baycases']);
+                all_cases_per_pop_arr_bay.push(cases_per_pop_bay);      
+                
+            }////////////////////////////////////////////////////////////////////////////////////////////
+            
+
+            /////Maximalwerte der Fälle und der Verhälniszahl Fälle pro 100.000 EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
+            max_cases_bay = Math.max.apply(null, cases_per_object_arr_bay);
+            max_cases_per_pop_bay = Math.max.apply(null, all_cases_per_pop_arr_bay);
+
+            
+            //Maximalzahl der Fälle auf Ganzzahl gerundet
+            max_cases_per_pop_bay = Math.round(max_cases_per_pop_bay);
+            //Begrenzung auf manuell festgelegten Maximalwert für cases_per_popder der für Chropletenkarte und Legende berücksichtigt wird
+            if (max_cases_per_pop_bay > max_cases_per_pop_allowed_bay) { max_cases_per_pop_bay = max_cases_per_pop_allowed_bay };
+            /////////////////////////////////////////////////////////////////
+
+            ///Methodenaufruf Styledefinition des GeoJSON Layers
+            geojsonLayer_bay_cases.setStyle(style_bay_cases);
+            
+
+        }/////Ende der Funktion handleJson_bay_cases//////////////////////////////////////////////
+
+
         ///function Choropleth Map styling ///////////////////////////////
         function style_ger(feature) {
 
@@ -453,6 +531,29 @@
         cases_per_pop = (feature.properties.gercases / feature.properties.ewz) * per_pop;
 
         ratio_cases_per_pop = cases_per_pop / max_cases_per_pop;
+
+
+        return {
+            ////Generierung der Polygonfärbung eines Objektes über Funktion mit Chroma.js
+            fillColor: colorRamp_cases(ratio_cases_per_pop),
+
+            weight: 2,
+            opacity: 1,
+            color: 'black',
+            dashArray: '3',
+            fillOpacity: 1
+
+        }
+
+        }////////////////////////////////////////////////
+
+        ///function Choropleth Map styling ///////////////////////////////
+        function style_bay_cases(feature) {
+
+        //Berechnung der Cases pro Einwohnwer aus Feature Properties gercases und ewz eines Landes bei dem Sytlingprozess jedes Polygons
+        cases_per_pop_bay = (feature.properties.baycases / feature.properties.krs_ewz) * per_pop_bay;
+
+        ratio_cases_per_pop = cases_per_pop_bay / max_cases_per_pop_bay;
 
 
         return {
@@ -534,7 +635,8 @@
         var overlayMaps = {
             "Covid19 Tode - Bundesländer": geojsonLayer_ger_deaths,
             "Covid19 Tode - Region Bayern": geojsonLayer_bay_deaths,
-            "Covid19 Fälle - Bundesländer": geojsonLayer_ger_cases
+            "Covid19 Fälle - Bundesländer": geojsonLayer_ger_cases,
+            "Covid19 Fälle - Region Bayern": geojsonLayer_bay_cases
         };
 
         L.control.layers(baseMaps).addTo(map);
@@ -602,7 +704,7 @@
             return div;
         };
 
-        // --- Legende für Tode in Bayern --- //
+        // --- Legende für Fälle in Deutschland --- //
         legend_cases.onAdd = function (map) {
 
         grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
@@ -630,6 +732,36 @@
         return div;
         };
 
+        // --- Legende für Tode in Bayern --- //
+        legend_bay_cases.onAdd = function (map) {
+
+        grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
+
+        //Generierung der Zahlenwerte der Klassen für die Legende
+        for (var i = 0; i < numb_classes_cases_bay; i++) {
+            grades_arr.push(Math.round(max_cases_per_pop_bay * (classwidth_between_fac * i)));
+        }////////////////////////////////////////////////////////
+
+        var div = L.DomUtil.create('div', 'info legend'),
+            grades_arr,
+            labels = [];
+        div.innerHTML += '<h4>Legende</h4>';
+        div.innerHTML += '<p>Fälle pro ' + per_pop_bay + ' EW:</p>';
+
+        ////Loop through our density intervals and generate a label with a colored square for each interval
+        ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
+        for (var i = 0; i < grades_arr.length; i++) {
+            div.innerHTML +=
+                '<i style="background:' + colorRamp_cases((i / numb_classes_cases_bay)) + '"></i> ' +
+                grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
+        }
+        div.innerHTML += '<p style="font-size: 10px">Für die Aktualität der Daten <br> siehe einzelne Regionen!</p>';
+
+        return div;
+        };
+
+
+
         // Source:  https://gis.stackexchange.com/questions/267605/leaflet-api-select-one-overlay-at-a-time-like-base-layers
         //          https://gis.stackexchange.com/questions/76113/dynamically-set-zoom-level-based-on-a-bounding-box
         // --- Hinzufügen der aktiven Legende -- //
@@ -639,20 +771,30 @@
                 // Lade Legende für Bayern Tode
                 this.removeControl(legend);
                 this.removeControl(legend_cases);
+                this.removeControl(legend_bay_cases);
                 legend_bay_deaths.addTo(this);
                 map.fitBounds(geojsonLayer_bay_deaths.getBounds());
             } else if (overlayMaps.name === 'Covid19 Fälle - Bundesländer') {
                 // Lade Legende für Deutschland Fälle
                 this.removeControl(legend);
                 this.removeControl(legend_bay_deaths);
+                this.removeControl(legend_bay_cases);
                 legend_cases.addTo(this);
                 map.fitBounds(geojsonLayer_ger_cases.getBounds());
             } else if(overlayMaps.name === 'Covid19 Tode - Bundesländer'){
                 // Lade Legende für Deutschland Tode
                 this.removeControl(legend_bay_deaths);
                 this.removeControl(legend_cases);
+                this.removeControl(legend_bay_cases);
                 legend.addTo(this);
                 map.fitBounds(geojsonLayer_ger_deaths.getBounds());
+            } else if(overlayMaps.name === 'Covid19 Fälle - Region Bayern'){
+                // Lade Legende für Bayern Fälle
+                this.removeControl(legend_bay_deaths);
+                this.removeControl(legend_cases);
+                this.removeControl(legend);
+                legend_bay_cases.addTo(this);
+                map.fitBounds(geojsonLayer_bay_cases.getBounds());
             }
         });
         console.log(overlayMaps.name);
