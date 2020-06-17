@@ -633,10 +633,11 @@
         };
 
         var overlayMaps = {
-            "Covid19 Tode - Bundesländer": geojsonLayer_ger_deaths,
-            "Covid19 Tode - Region Bayern": geojsonLayer_bay_deaths,
-            "Covid19 Fälle - Bundesländer": geojsonLayer_ger_cases,
-            "Covid19 Fälle - Region Bayern": geojsonLayer_bay_cases
+            "Deutschland - Covid19 Fälle": geojsonLayer_ger_cases,
+            "Deutschland - Covid19 Tote": geojsonLayer_ger_deaths,
+            "Bayern - Covid19 Fälle": geojsonLayer_bay_cases,
+            "Bayern - Covid19 Tote": geojsonLayer_bay_deaths
+            
         };
 
         L.control.layers(baseMaps).addTo(map);
@@ -767,34 +768,34 @@
         // --- Hinzufügen der aktiven Legende -- //
             map.on('baselayerchange', function (overlayMaps) {
             // Switch to legend...
-            if (overlayMaps.name === 'Covid19 Tode - Region Bayern') {
-                // Lade Legende für Bayern Tode
-                this.removeControl(legend);
-                this.removeControl(legend_cases);
-                this.removeControl(legend_bay_cases);
-                legend_bay_deaths.addTo(this);
-                map.fitBounds(geojsonLayer_bay_deaths.getBounds());
-            } else if (overlayMaps.name === 'Covid19 Fälle - Bundesländer') {
+            if (overlayMaps.name === 'Deutschland - Covid19 Fälle') {
                 // Lade Legende für Deutschland Fälle
                 this.removeControl(legend);
                 this.removeControl(legend_bay_deaths);
                 this.removeControl(legend_bay_cases);
                 legend_cases.addTo(this);
                 map.fitBounds(geojsonLayer_ger_cases.getBounds());
-            } else if(overlayMaps.name === 'Covid19 Tode - Bundesländer'){
+            } else if(overlayMaps.name === 'Deutschland - Covid19 Tote'){
                 // Lade Legende für Deutschland Tode
                 this.removeControl(legend_bay_deaths);
                 this.removeControl(legend_cases);
                 this.removeControl(legend_bay_cases);
                 legend.addTo(this);
                 map.fitBounds(geojsonLayer_ger_deaths.getBounds());
-            } else if(overlayMaps.name === 'Covid19 Fälle - Region Bayern'){
+            } else if(overlayMaps.name === 'Bayern - Covid19 Fälle'){
                 // Lade Legende für Bayern Fälle
                 this.removeControl(legend_bay_deaths);
                 this.removeControl(legend_cases);
                 this.removeControl(legend);
                 legend_bay_cases.addTo(this);
                 map.fitBounds(geojsonLayer_bay_cases.getBounds());
+            } else if (overlayMaps.name === 'Bayern - Covid19 Tote') {
+                // Lade Legende für Bayern Tode
+                this.removeControl(legend);
+                this.removeControl(legend_cases);
+                this.removeControl(legend_bay_cases);
+                legend_bay_deaths.addTo(this);
+                map.fitBounds(geojsonLayer_bay_deaths.getBounds());
             }
         });
         console.log(overlayMaps.name);
