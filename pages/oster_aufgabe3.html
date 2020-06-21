@@ -334,17 +334,20 @@
         ///Generierung aller Popup-Fenster aus den JSON feature.properties///////////////////////////////
         function onEachFeature(feature, layer) {
             layer.bindPopup(
-                '<h4>Daten:</h4>' +
+                '<h2>' + feature.properties.name_de + '</h2>' +
+
                 'ID: ' + feature.properties.id + '<br>' +
-                'Name: ' + feature.properties.name_de + '<br>' +
                 'Ländercode: ' + feature.properties.countrycode + '<br>' +
                 'Kontinent: ' + feature.properties.continent + '<br>' +
                 'Einwohner: ' + feature.properties.mpop + '<br>' +
+                '<br>' +
                 'Fälle: ' + feature.properties.scases + '<br>' +
                 'Todefälle: ' + feature.properties.sdeaths + '<br>' +
                 '<br>' +
-                'Infizierte/100.000 EW: ' + (feature.properties.scases/feature.properties.mpop*100000).toFixed(2) + '<br>' +
-                'Tode/100.000 EW: ' + (feature.properties.sdeaths/feature.properties.mpop*100000).toFixed(4) + '<br>'
+                'Infizierte/100.000 EW: ~' + Math.round(feature.properties.scases/feature.properties.mpop*100000) + '<br>' +
+                'Tode/100.000 EW: ~' + Math.round(feature.properties.sdeaths/feature.properties.mpop*100000) + '<br>'+
+                '<br>' +
+                '<p style="font-size: 10px;">Letzte Aktualisierung: ' + feature.properties.mdate + '<p>'
             );
             //'<h3>Landesdaten:</h3>' + '<pre>' + JSON.stringify(feature.properties, null, ' ').replace(/[\{\}"]/g, '') + '</pre>' + 'Tode/100.000 EW: ' + (feature.properties.sdeaths/feature.properties.mpop*100000).toFixed(4) + '<br>');
             
