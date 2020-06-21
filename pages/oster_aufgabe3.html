@@ -121,7 +121,8 @@
 
 
         //Initialisierung der Legende und Positionierung
-        var legend = L.control({ position: 'bottomright' });
+        var legend_deaths = L.control({ position: 'bottomright' });
+        var legend_cases = L.control({ position: 'bottomright' });
 
 
         ///////////////////////////////////////////////////////
@@ -137,10 +138,10 @@
         //Maximalwert für deaths_per_pop der für die Generierung der Choropletenkarte und Legende berücksichtigt wird
         ////Damit können Extremwerte wie z.B. bei Zwergstaaten abgeschwächt werden !!!
         var max_deaths_per_pop_allowed = 50;
-        var max_cases_per_pop_allowed = 500;
+        var max_cases_per_pop_allowed = 800;
         ////////////////////////////////////
         //Anzahl der Farbstufenklassen bzw. Werteklassen für Choropletenkarte und Legende
-        var numb_classes = 10;
+        var numb_classes = 7;
         var numb_classes_cases = 7;
         ////////////////////////////////////
 
@@ -260,7 +261,7 @@
             geojsonLayer1.setStyle(style1);
 
             ///Methodenaufruf zur Generierung der Legende für das L-Mapobjekt
-            legend.addTo(map);
+            legend_deaths.addTo(map);
 
         }/////Ende der Funktion handleJson//////////////////////////////////////////////
 
@@ -333,17 +334,20 @@
         ///Generierung aller Popup-Fenster aus den JSON feature.properties///////////////////////////////
         function onEachFeature(feature, layer) {
             layer.bindPopup(
-                '<h4>Daten:</h4>' +
+                '<h2>' + feature.properties.name_de + '</h2>' +
+
                 'ID: ' + feature.properties.id + '<br>' +
-                'Name: ' + feature.properties.name_de + '<br>' +
                 'Ländercode: ' + feature.properties.countrycode + '<br>' +
                 'Kontinent: ' + feature.properties.continent + '<br>' +
                 'Einwohner: ' + feature.properties.mpop + '<br>' +
+                '<br>' +
                 'Fälle: ' + feature.properties.scases + '<br>' +
                 'Todefälle: ' + feature.properties.sdeaths + '<br>' +
                 '<br>' +
-                'Infizierte/100.000 EW: ' + (feature.properties.scases/feature.properties.mpop*100000).toFixed(2) + '<br>' +
-                'Tode/100.000 EW: ' + (feature.properties.sdeaths/feature.properties.mpop*100000).toFixed(4) + '<br>'
+                'Infizierte/100.000 EW: ~' + Math.round(feature.properties.scases/feature.properties.mpop*100000) + '<br>' +
+                'Tode/100.000 EW: ~' + Math.round(feature.properties.sdeaths/feature.properties.mpop*100000) + '<br>'+
+                '<br>' +
+                '<p style="font-size: 10px;">Letzte Aktualisierung: ' + feature.properties.mdate + '<p>'
             );
             //'<h3>Landesdaten:</h3>' + '<pre>' + JSON.stringify(feature.properties, null, ' ').replace(/[\{\}"]/g, '') + '</pre>' + 'Tode/100.000 EW: ' + (feature.properties.sdeaths/feature.properties.mpop*100000).toFixed(4) + '<br>');
             
@@ -369,11 +373,12 @@
         };
 
         var overlayMaps = {
-            "Covid19 - Deaths/Pop": geojsonLayer,
-            "Covid19 - Cases/Pop": geojsonLayer1
+            "Covid19 - Tode": geojsonLayer,
+            "Covid19 - Fälle": geojsonLayer1
         };
 
-        L.control.layers(baseMaps, overlayMaps).addTo(map);
+        L.control.layers(baseMaps).addTo(map);
+        L.control.layers(overlayMaps).addTo(map);
         ///////////////////////////////////////////////////////////////////
 
 
@@ -381,24 +386,20 @@
         ////////////////////////////////////////////////////////////////////////////
         ////Defintion der Legende Fallzahlen pro 100.000 Einwohner bei Methode OnAdd mit dynamisccher Generierung der Klassenstufen
 
-        legend.onAdd = function (map) {
+        legend_deaths.onAdd = function (map) {
 
             grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
-            grades_arr1 = []; //Array für die Werte der Klassenabstufungen der Farbstufen fpr Cases/Pop
 
             //Generierung der Zahlenwerte der Klassen für die Legende
             for (var i = 0; i < numb_classes; i++) {
                 grades_arr.push(Math.round(max_deaths_per_pop * (classwidth_between_fac * i)));
             }////////////////////////////////////////////////////////
-            for (var i = 0; i < numb_classes_cases; i++) {
-                grades_arr1.push(Math.round(max_cases_per_pop * (classwidth_between_fac * i)));
-            }
 
             var div = L.DomUtil.create('div', 'info legend'),
                 grades_arr,
                 labels = [];
             div.innerHTML += '<h4>Legende</h4>';
-            div.innerHTML += '<p>Deaths/Pop: </p>';
+            div.innerHTML += '<p>Tode/100.000 Einwohner: </p>';
 
             ////Loop through our density intervals and generate a label with a colored square for each interval
             ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
@@ -407,15 +408,57 @@
                     '<i style="background:' + colorRamp((i / numb_classes)) + '"></i> ' +
                     grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
             }
-            div.innerHTML += '<p>Cases/Pop: </p>';
-            for (var i = 0; i < grades_arr1.length; i++) {
-                div.innerHTML +=
-                    '<i style="background: ' + colorRamp1((i/numb_classes_cases)) + '"></i> ' +
-                    grades_arr1[i] + (grades_arr[i +1] ? '&ndash;' + grades_arr1[i +1] + '<br>' : '+');
-            }
 
+            div.innerHTML += '<p style="font-size: 10px;">Letzte Aktualisierung: <br>siehe einzelne Länder <p>';
             return div;
         };
+
+        legend_cases.onAdd = function (map) {
+
+            grades_arr1 = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
+
+            //Generierung der Zahlenwerte der Klassen für die Legende
+            for (var i = 0; i < numb_classes_cases; i++) {
+                grades_arr1.push(Math.round(max_cases_per_pop * (classwidth_between_fac * i)));
+            }////////////////////////////////////////////////////////
+
+            var div = L.DomUtil.create('div', 'info legend'),
+            grades_arr1,
+                labels = [];
+            div.innerHTML += '<h4>Legende</h4>';
+            div.innerHTML += '<p>Fälle/100.000 Einwohner: </p>';
+
+            ////Loop through our density intervals and generate a label with a colored square for each interval
+            ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
+            for (var i = 0; i < grades_arr1.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + colorRamp1((i / numb_classes_cases)) + '"></i> ' +
+                    grades_arr1[i] + (grades_arr1[i + 1] ? '&ndash;' + grades_arr1[i + 1] + '<br>' : '+');
+            }
+
+            div.innerHTML += '<p style="font-size: 10px;">Letzte Aktualisierung: <br>siehe einzelne Länder <p>';
+            return div;
+        }
+
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////Funktion um die passende Legende zu lagen///////////////////////////////////////////////////////
+        //
+        // Source:  https://gis.stackexchange.com/questions/267605/leaflet-api-select-one-overlay-at-a-time-like-base-layers
+        //          https://gis.stackexchange.com/questions/76113/dynamically-set-zoom-level-based-on-a-bounding-box
+
+        map.on('baselayerchange', function (overlayMaps) {
+            // Switch to legend...
+            if (overlayMaps.name === 'Covid19 - Fälle') {
+                // Lade Legende für Fälle
+                this.removeControl(legend_deaths);
+                legend_cases.addTo(this);
+            } else {
+                // Lade Legende für Tode
+                this.removeControl(legend_cases);
+                legend_deaths.addTo(this);
+            }
+        });
 
     </script>
 

@@ -3,7 +3,10 @@ General Styling for the Website
 */
 
 .page-container {
-    max-width: 1200px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1500px;
 }
 
 .grid{
