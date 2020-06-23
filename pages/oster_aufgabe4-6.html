@@ -14,7 +14,8 @@
 
     <!--//Chrome.js - Bibliothek --- Neu 20.04.20  (https://gka.github.io/chroma.js/#color-scales)-->
     <script src="../js/chroma.js" crossorigin=""></script>
-
+    <!--Google Charts Library-->
+    <script type="text/javascript"src="https://www.gstatic.com/charts/loader.js"></script>
 
     <!-- ///////Stildefinitionen für Leaflet Map\\\\\\\\-->
     <style>
@@ -64,21 +65,8 @@
     <!-- ///////Definition des DIV-Containers\\\\\\\\-->
     <div id="mapid" style="width: 1000px; height: 750px;"></div>
 
-    <!-- // Änderungen am Grundlegenden Code-->
-    <div class="settings">
-        <ul>
-            Einstellungen:
-            <li>
-                colorRamp = chroma.scale(['white', 'yellow','red','black']).correctLightness().classes(numb_classes);
-            </li>
-            <li>
-                var numb_classes = 10;
-            </li>
-            <li>
-                var max_deaths_per_pop_allowed = 500; (aktuelle noch nicht erreicht und deswegen nicht wirklich relevant an diesem Punkt!)
-            </li>
-        </ul>
-    </div>
+    <!-- Kontainer für die Google Charts -->
+    <div id="chart_div"></div>
 
     <script>
         ///////Layerorganisation der Hintergrundkarten\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -350,12 +338,89 @@
                 '<br>' +
                 '<p style="font-size: 10px;">Letzte Aktualisierung: ' + feature.properties.mdate + '<p>'
             );
-            //'<h3>Landesdaten:</h3>' + '<pre>' + JSON.stringify(feature.properties, null, ' ').replace(/[\{\}"]/g, '') + '</pre>' + 'Tode/100.000 EW: ' + (feature.properties.sdeaths/feature.properties.mpop*100000).toFixed(4) + '<br>');
+            layer.on({
+                click: ClickOnFeature
+            });
             
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // Berechnungen für Google Charts mit der ClickOnFeature Funktion
+        function ClickOnFeature(e) {
+            e.target.setStyle({
+            color: 'red'
+            })
+            //Variablenreferenz auf Ländernamen des gerade aktiven Features (über e.target s.o.) 
+            var land_clicked = e.target.feature.properties.name_de;
+            console.log(land_clicked);
+            //Initialisierung des Arrays für Chronologie alle Fallzahlen eines Landes 
+            var cases_clicked_arr = [];
+            //Initialisierung des Arrays für Chronologie alle Datumsreferenzen eines Landes 
+            var dates_clicked_arr = [];
+            //Initialisierung des mehrdimensionalen Arrays (Tag, Fallzahl) des gewählten Landes 
+            var daycount_cases_clicked_arr = [];
+            //Initialisierung des mehrdimensionalen Arrays (Tag, Fallzahl, Datum) des Landes 
+            var daycount_cases_dates_clicked_arr = [];
+            //Befüllung des Array cases_clicked_arr mit allen Fallzahlen eines Landes 
+            cases_clicked_arr = e.target.feature.properties.ajcases;
+            //Befüllung Array dates_clicked_arr mit allen Datumsreferenzen zu Fallzahlen d. Landes 
+            dates_clicked_arr = e.target.feature.properties.ajdate;
+            //Interpretation der Stringinhalte als Arrayobjekte über eval() 
+            cases_clicked_arr = eval(cases_clicked_arr); dates_clicked_arr = eval(dates_clicked_arr);
+
+            //Umkehrung der zeitl. Chronologie v. Fällen und Datumsreferenzen für aufsteigende Richtung 
+            cases_clicked_arr = cases_clicked_arr.reverse(); dates_clicked_arr = dates_clicked_arr.reverse();
+
+
+            //Variablendefinition Zähler für nachfolgende For-Schleife 
+            cases_count = cases_clicked_arr.length;
+            
+            for (var i = 0; i < cases_count; i++) {
+                //Zusammenstellung der mehrdimensionalen Arrays für das ausgewählte Land 
+                daycount_cases_clicked_arr[i] = [i, cases_clicked_arr[i]]; daycount_cases_dates_clicked_arr[i] = [i, cases_clicked_arr[i],dates_clicked_arr[i]];
+            }
+
+            //Definition des Diagrammtyps mit dem Einladen der notwendigen Packages
+            google.charts.load('current', {packages: ['corechart', 'line']});
+            //Wenn Das Einladen der Packages abgeschlossen ist, dann startet der Generierungsaufruf
+            google.charts.setOnLoadCallback(function () {
+                // Aufruf der Google Chart Zeichenmethode mit den entsprechenden Arrays des ausgewählten Landes als Parameter
+                drawBasic(daycount_cases_clicked_arr, daycount_cases_dates_clicked_arr, cases_count, land_clicked);
+            }); 
+        }//////////////////////////////ENDE ClickOnFeature //////////////////////
+
+        ///Funktion drawBasic ///
+        function drawBasic(daycount_cases_clicked_arr, daycount_cases_dates_clicked_arr, cases_count, land_clicked) {
+            var data = new google.visualization.DataTable();
+            //Anlage der Datentabelle für Grafik (Datentyp und Spaltenname)
+            data.addColumn('number','Tag');
+            data.addColumn('number','Covid19 Fälle');
+            //Befüllung der Tabelle mit den Werten für das zuletzt ausgewählte Land
+            data.addRows(daycount_cases_clicked_arr);
+
+            //Referenz auf Dokument Objekt des div-Containers als neues Line Chart Objekt 
+            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            
+            // Optionen für das Linechart
+            // Grundlage von: https://developers-dot-devsite-v2-prod.appspot.com/chart/interactive/docs/gallery/linechart.html
+            var options = {
+                title: 'Verlauf der Covid19 Fälle',
+                width: 1000,
+                height: 300,
+                // Adds labels to the axes
+                hAxis: {
+                    title: 'Tage'
+                },
+                vAxis: {
+                    title: 'Covid19 Fälle'
+                },
+                backgroundColor: '#c3cad6'
+            };
+            //Aufruf der draw Methode des chart Objektes mit den Inhalten (data) und den Options 
+            chart.draw(data, options);
+        }
 
         ///Methodenaufruf zur Integration des GeoJSON Layers in das L-Mapobjekt
         map.addLayer(geojsonLayer);
