@@ -345,41 +345,48 @@
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+        /////////////////////////////////////////////////////////////////// Oster Aufgabe 4 ///////////////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////////////////////////////////////
         // Berechnungen für Google Charts mit der ClickOnFeature Funktion
+
         function ClickOnFeature(e) {
             e.target.setStyle({
-            color: 'red'
+                color: 'red'
             })
             //Variablenreferenz auf Ländernamen des gerade aktiven Features (über e.target s.o.) 
             var land_clicked = e.target.feature.properties.name_de;
             console.log(land_clicked);
             //Initialisierung des Arrays für Chronologie alle Fallzahlen eines Landes 
             var cases_clicked_arr = [];
+            //Initialisierung des Arrays für Chronologie alle Todeszahlen eines Landes 
+            var deaths_clicked_arr = [];
             //Initialisierung des Arrays für Chronologie alle Datumsreferenzen eines Landes 
             var dates_clicked_arr = [];
-            //Initialisierung des mehrdimensionalen Arrays (Tag, Fallzahl) des gewählten Landes 
-            var daycount_cases_clicked_arr = [];
-            //Initialisierung des mehrdimensionalen Arrays (Tag, Fallzahl, Datum) des Landes 
-            var daycount_cases_dates_clicked_arr = [];
-            //Befüllung des Array cases_clicked_arr mit allen Fallzahlen eines Landes 
+            //Befüllung des Array cases_clicked_arr mit allen Fallzahlen/Todeszahlen eines Landes 
             cases_clicked_arr = e.target.feature.properties.ajcases;
+            deaths_clicked_arr = e.target.feature.properties.ajdeath;
             //Befüllung Array dates_clicked_arr mit allen Datumsreferenzen zu Fallzahlen d. Landes 
             dates_clicked_arr = e.target.feature.properties.ajdate;
             //Interpretation der Stringinhalte als Arrayobjekte über eval() 
             cases_clicked_arr = eval(cases_clicked_arr); dates_clicked_arr = eval(dates_clicked_arr);
+            deaths_clicked_arr = eval(deaths_clicked_arr); dates_clicked_arr = eval(dates_clicked_arr);
+
+            // Kombinierte Variablen von Fällen und Toden ////////////////////////////////////////////////////////////
+            //Initialisierung des mehrdimensionalen Arrays (Tag, Fälle, Todeszahlen) des gewählten Landes 
+            var daycount_cases_deaths_clicked_arr = [];
+            //Initialisierung des mehrdimensionalen Arrays (Tag, Fallzahlen, Todeszahlen, Datum) des Landes 
+            var daycount_cases_deaths_dates_clicked_arr = [];
 
             //Umkehrung der zeitl. Chronologie v. Fällen und Datumsreferenzen für aufsteigende Richtung 
             cases_clicked_arr = cases_clicked_arr.reverse(); dates_clicked_arr = dates_clicked_arr.reverse();
-
+            deaths_clicked_arr = deaths_clicked_arr.reverse(); dates_clicked_arr = dates_clicked_arr.reverse();
 
             //Variablendefinition Zähler für nachfolgende For-Schleife 
             cases_count = cases_clicked_arr.length;
             
-            for (var i = 0; i < cases_count; i++) {
-                //Zusammenstellung der mehrdimensionalen Arrays für das ausgewählte Land 
-                daycount_cases_clicked_arr[i] = [i, cases_clicked_arr[i]]; daycount_cases_dates_clicked_arr[i] = [i, cases_clicked_arr[i],dates_clicked_arr[i]];
+            //Zusammenstellung der mehrdimensionalen Arrays für das ausgewählte Land für Fälle, Tode
+            for (var i = 0; i < cases_count; i++) {   
+                daycount_cases_deaths_clicked_arr[i] = [i,cases_clicked_arr[i], deaths_clicked_arr[i]]; daycount_cases_deaths_dates_clicked_arr[i] = [i, cases_clicked_arr[i], deaths_clicked_arr[i], dates_clicked_arr[i]];
             }
 
             //Definition des Diagrammtyps mit dem Einladen der notwendigen Packages
@@ -387,38 +394,44 @@
             //Wenn Das Einladen der Packages abgeschlossen ist, dann startet der Generierungsaufruf
             google.charts.setOnLoadCallback(function () {
                 // Aufruf der Google Chart Zeichenmethode mit den entsprechenden Arrays des ausgewählten Landes als Parameter
-                drawBasic(daycount_cases_clicked_arr, daycount_cases_dates_clicked_arr, cases_count, land_clicked);
+                drawBasic(daycount_cases_deaths_clicked_arr, daycount_cases_deaths_dates_clicked_arr, land_clicked, cases_count, dates_clicked_arr);
             }); 
         }//////////////////////////////ENDE ClickOnFeature //////////////////////
 
         ///Funktion drawBasic ///
-        function drawBasic(daycount_cases_clicked_arr, daycount_cases_dates_clicked_arr, cases_count, land_clicked) {
+        function drawBasic(daycount_cases_deaths_clicked_arr, daycount_cases_deaths_dates_clicked_arr, land_clicked, cases_count, dates_clicked_arr) {
             var data = new google.visualization.DataTable();
             //Anlage der Datentabelle für Grafik (Datentyp und Spaltenname)
             data.addColumn('number','Tag');
-            data.addColumn('number','Covid19 Fälle');
+            data.addColumn('number','Fälle');
+            data.addColumn('number','Tode');
             //Befüllung der Tabelle mit den Werten für das zuletzt ausgewählte Land
-            data.addRows(daycount_cases_clicked_arr);
+            data.addRows(daycount_cases_deaths_clicked_arr);
 
             //Referenz auf Dokument Objekt des div-Containers als neues Line Chart Objekt 
-            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-            
-            // Optionen für das Linechart
-            // Grundlage von: https://developers-dot-devsite-v2-prod.appspot.com/chart/interactive/docs/gallery/linechart.html
+            var chart = new google.visualization.LineChart(document.getElementById('chart_div')); 
+
             var options = {
-                title: 'Verlauf der Covid19 Fälle',
+
+                title: land_clicked + ' - Zahlen zu Covid19 mit zeitlichem Verlauf: von ' + dates_clicked_arr[cases_count-1] + ' bis ' + dates_clicked_arr[0],
                 width: 1000,
                 height: 300,
-                // Adds labels to the axes
+                series: {
+                    // Gives each series an axis name that matches the Y-axis below.
+                    0: {targetAxisIndex: 0},
+                    1: {targetAxisIndex: 1},
+                },
+                vAxes: {
+                    // Adds titles to each axis.
+                    0: {title: 'Fallzahlen'},
+                    1: {title: 'Todeszahlen'}
+                },
                 hAxis: {
-                    title: 'Tage'
+                    title: 'Tage' 
                 },
-                vAxis: {
-                    title: 'Covid19 Fälle'
-                },
-                backgroundColor: '#c3cad6'
+                backgroundColor: '#ebe5e5'
+
             };
-            //Aufruf der draw Methode des chart Objektes mit den Inhalten (data) und den Options 
             chart.draw(data, options);
         }
 
