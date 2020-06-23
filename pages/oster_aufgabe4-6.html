@@ -67,6 +67,7 @@
 
     <!-- Kontainer für die Google Charts -->
     <div id="chart_div"></div>
+    <div id="piechart_div"></div>
 
     <script>
         ///////Layerorganisation der Hintergrundkarten\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -143,6 +144,10 @@
         var all_deaths_per_pop_arr = [];
         var all_cases_per_pop_arr = [];
         //////////////////////////////////////////////////////
+
+        /// Fälle auf der Welt für PieChart///
+        //////////////////////////////////////////////////////
+        var cases_world = 0;
 
 
         ///NEU CHROMA.JS - Definition der Farbabstufungen mit chroma.js
@@ -227,6 +232,10 @@
                 /////Arrays mit den Objektdaten füllen/////////////////////////////////////
                 cases_per_object_arr.push(js_objects_of_json_string[i]['scases']);
                 all_cases_per_pop_arr.push(cases_per_pop);              
+                
+                //Berechnung der Gesammtfälle auf der Welt für das Pie Chart
+                cases_world = cases_world + js_objects_of_json_string[i]['scases'];
+
             }////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -341,6 +350,9 @@
             layer.on({
                 click: ClickOnFeature
             });
+            layer.on({
+                click: ClickOnFeature_Pie
+            });
             
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -438,7 +450,51 @@
 
             };
             chart.draw(data, options);
-        }
+        }///////////// Ende der drawBasic Funktion für das LineChart Diagramm //////////////////
+        /////////////////////////////////////////////////////////////////// Ende Oster Aufgabe 4 ///////////////////////////////////////////////////////////////////
+
+
+        /////////////////////////////////////////////////////////////////// Oster Aufgabe 5 ///////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // Berechnungen für Google Pie Chart mit der ClickOnFeature Funktion
+
+        function ClickOnFeature_Pie(e) {
+            //Variablenreferenz auf Ländernamen des gerade aktiven Features (über e.target s.o.) 
+            var land_clicked = e.target.feature.properties.name_de;
+            
+            var country_cases = e.target.feature.properties.scases; 
+            var world_cases_remaining = cases_world - country_cases;
+
+            //Definition des Diagrammtyps mit dem Einladen der notwendigen Packages
+            google.charts.load('current', {packages: ['corechart']});
+            //Wenn Das Einladen der Packages abgeschlossen ist, dann startet der Generierungsaufruf
+            google.charts.setOnLoadCallback(function () {
+                // Aufruf der Google Chart Zeichenmethode mit den entsprechenden Arrays des ausgewählten Landes als Parameter
+                drawBasicPie(country_cases, world_cases_remaining, land_clicked);
+            }); 
+        }//////////////////////////////ENDE ClickOnFeature_Pie //////////////////////
+
+        function drawBasicPie(country_cases, world_cases_remaining, land_clicked) {
+            
+            var data = google.visualization.arrayToDataTable([
+                ['Betroffene', 'Anzahl'],
+                ['Fälle Land', country_cases],
+                ['Fälle weltweit', world_cases_remaining]
+                ]);
+            var options = {
+                title: land_clicked + ' - Covid19 Fälle im Vergleich mit den weltweiten Fällen',
+                width: 600,
+                height: 400,
+                backgroundColor: '#d2f7e9'
+            };
+
+        var chart = new google.visualization.PieChart(document.getElementById('piechart_div'));
+
+        chart.draw(data, options);
+
+        }///////////// Ende der drawBasic Funktion für das PieDiagramm //////////////////
+        /////////////////////////////////////////////////////////////////// Ende Oster Aufgabe 5 ///////////////////////////////////////////////////////////////////
+        
 
         ///Methodenaufruf zur Integration des GeoJSON Layers in das L-Mapobjekt
         map.addLayer(geojsonLayer);
