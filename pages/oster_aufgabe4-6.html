@@ -368,8 +368,9 @@
             //Befüllung Array dates_clicked_arr mit allen Datumsreferenzen zu Fallzahlen d. Landes 
             dates_clicked_arr = e.target.feature.properties.ajdate;
             //Interpretation der Stringinhalte als Arrayobjekte über eval() 
-            cases_clicked_arr = eval(cases_clicked_arr); dates_clicked_arr = eval(dates_clicked_arr);
-            deaths_clicked_arr = eval(deaths_clicked_arr); dates_clicked_arr = eval(dates_clicked_arr);
+            cases_clicked_arr = eval(cases_clicked_arr);
+            dates_clicked_arr = eval(dates_clicked_arr);
+            deaths_clicked_arr = eval(deaths_clicked_arr);
 
             // Kombinierte Variablen von Fällen und Toden ////////////////////////////////////////////////////////////
             //Initialisierung des mehrdimensionalen Arrays (Tag, Fälle, Todeszahlen) des gewählten Landes 
@@ -378,15 +379,17 @@
             var daycount_cases_deaths_dates_clicked_arr = [];
 
             //Umkehrung der zeitl. Chronologie v. Fällen und Datumsreferenzen für aufsteigende Richtung 
-            cases_clicked_arr = cases_clicked_arr.reverse(); dates_clicked_arr = dates_clicked_arr.reverse();
-            deaths_clicked_arr = deaths_clicked_arr.reverse(); dates_clicked_arr = dates_clicked_arr.reverse();
+            cases_clicked_arr = cases_clicked_arr.reverse();
+            dates_clicked_arr = dates_clicked_arr.reverse();
+            deaths_clicked_arr = deaths_clicked_arr.reverse();
 
             //Variablendefinition Zähler für nachfolgende For-Schleife 
             cases_count = cases_clicked_arr.length;
             
             //Zusammenstellung der mehrdimensionalen Arrays für das ausgewählte Land für Fälle, Tode
             for (var i = 0; i < cases_count; i++) {   
-                daycount_cases_deaths_clicked_arr[i] = [i,cases_clicked_arr[i], deaths_clicked_arr[i]]; daycount_cases_deaths_dates_clicked_arr[i] = [i, cases_clicked_arr[i], deaths_clicked_arr[i], dates_clicked_arr[i]];
+                daycount_cases_deaths_clicked_arr[i] = [i,cases_clicked_arr[i], deaths_clicked_arr[i]]; 
+                daycount_cases_deaths_dates_clicked_arr[i] = [i, cases_clicked_arr[i], deaths_clicked_arr[i], new Date(dates_clicked_arr[i].replace(/#|-/g, ', '))];
             }
 
             //Definition des Diagrammtyps mit dem Einladen der notwendigen Packages
