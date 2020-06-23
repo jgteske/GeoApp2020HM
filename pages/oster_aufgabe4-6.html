@@ -389,7 +389,10 @@
             //Zusammenstellung der mehrdimensionalen Arrays für das ausgewählte Land für Fälle, Tode
             for (var i = 0; i < cases_count; i++) {   
                 daycount_cases_deaths_clicked_arr[i] = [i,cases_clicked_arr[i], deaths_clicked_arr[i]]; 
-                daycount_cases_deaths_dates_clicked_arr[i] = [i, cases_clicked_arr[i], deaths_clicked_arr[i], new Date(dates_clicked_arr[i].replace(/#|-/g, ', '))];
+
+                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                //### Hiermit könnte man die Daten in die x-Achse bringen, inedm bei der drawBasic Funktion unten ein Datafeldspalte > data.addColumn('date', 'Datum') hinzugefügt wird! Bei addRows müsste dann das folgende Array eingefügt werden und die Darstellungen in den Optionen angepasst(Johann Teske 23.06.2020)
+                daycount_cases_deaths_dates_clicked_arr[i] = [i, cases_clicked_arr[i], deaths_clicked_arr[i], new Date(dates_clicked_arr[i].replace(/#|-/g, ', '))];  
             }
 
             //Definition des Diagrammtyps mit dem Einladen der notwendigen Packages
@@ -420,12 +423,11 @@
                 width: 1000,
                 height: 300,
                 series: {
-                    // Gives each series an axis name that matches the Y-axis below.
                     0: {targetAxisIndex: 0},
                     1: {targetAxisIndex: 1},
                 },
                 vAxes: {
-                    // Adds titles to each axis.
+                    // Titel für Axe mit series Index
                     0: {title: 'Fallzahlen'},
                     1: {title: 'Todeszahlen'}
                 },
