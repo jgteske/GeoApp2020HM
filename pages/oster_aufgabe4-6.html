@@ -12,6 +12,9 @@
     <script src="../js/leaflet.js" crossorigin=""></script>
     <script src="../js/jquery-3.5.0.min.js" crossorigin=""></script>
 
+    <!-- Einbinden von Leaflet Minichart-->
+    <script src="https://unpkg.com/leaflet.minichart/dist/leaflet.minichart.min.js" charset="utf-8"></script>
+
     <!--//Chrome.js - Bibliothek --- Neu 20.04.20  (https://gka.github.io/chroma.js/#color-scales)-->
     <script src="../js/chroma.js" crossorigin=""></script>
     <!--Google Charts Library-->
@@ -184,7 +187,7 @@
         /////Funktion handleJson mit Generierung der Properties Arrays und statistischen Vorbrechnungen
         function handleJson(data) {
 
-            console.log(data);
+            //console.log(data);
             geojsonLayer.addData(data);
             geojsonLayer1.addData(data);
 
@@ -260,6 +263,62 @@
 
             ///Methodenaufruf zur Generierung der Legende für das L-Mapobjekt
             legend_deaths.addTo(map);
+
+
+
+            //////////////////////////////////////////////////  Oster Aufgabe 6 //////////////////////////////////////////////////////////////////
+            // Schleife um Mitten für einzelne Elemente herauszufinden
+
+            jgeometry = JSON.stringify(data.features.map(function (el) { return el; }));
+            ////Parsen der Zeichenkette des JSON in JavaScript Objekt
+            js_geometry_object = JSON.parse(jgeometry);
+
+            var center_point_arr = [];
+
+            // Erstellen eines Array um die einzelnen Mittelpunkte der Länder zu bekommen
+            for (var i = 0; i < obj_count; i++){
+                
+                var centre_point_single = new L.GeoJSON(js_geometry_object[i]).addTo(map);
+                centre_point = centre_point_single.getBounds().getCenter();
+                centre_point_single_values = Object.values(centre_point);
+                centre_point_single.remove();
+                center_point_arr[i] = centre_point_single_values;
+            }
+            
+
+            // Einbindung Leaflet.minichart für die Karte
+            // Darstellung von Fällen und Toden in einem Diagramm auf jeden Land
+            // https://rte-antares-rpackage.github.io/leaflet.minichart/tutorial-PISA%20scores.html
+
+            var charts = {};
+
+
+             for (var i = 0; i < obj_count; i++) {
+                var d = js_objects_of_json_string[i];
+                var cnt = {lan: center_point_arr[i][0], lon: center_point_arr[i][1]};
+                // Komination von beiden Arrays
+                d = {...d, ...cnt};
+                console.log(d);
+                if (d.continent == "Europe" & d.scases !== null & d.sdeaths !== null) {    
+                    var chartData = [
+                    d.scases,
+                    d.sdeaths
+                    ];
+                    
+                    charts[d.name_de] = L.minichart(
+                        [d.lan, d.lon], 
+                        {
+                            data: chartData, 
+                            maxValues: 100000,
+                            width: 40, 
+                            height: 40,
+                            colors: ["#4e8ade", "#de5f4e"]
+                            });
+                    map.addLayer(charts[d.name_de]);
+                }    
+            } ////////////////////////////////////////////////// Ende Oster Aufgabe 6 //////////////////////////////////////////////////////////////////
+            
+
 
         }/////Ende der Funktion handleJson//////////////////////////////////////////////
 
