@@ -266,7 +266,7 @@
 
 
 
-            //////////////////////////////////////////////////  Oster Aufgabe 6 //////////////////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////////  Oster Aufgabe 6 //////////////////////////////////////////////////////////////////
             // Schleife um Mitten für einzelne Elemente herauszufinden
 
             jgeometry = JSON.stringify(data.features.map(function (el) { return el; }));
@@ -316,7 +316,7 @@
                             });
                     map.addLayer(charts[d.name_de]);
                 }    
-            } ////////////////////////////////////////////////// Ende Oster Aufgabe 6 //////////////////////////////////////////////////////////////////
+            } ////////////////////////////////////////////////////////// Ende Oster Aufgabe 6 //////////////////////////////////////////////////////////////////
             
 
 
@@ -424,26 +424,22 @@
             e.target.setStyle({
                 color: 'red'
             })
-            //Variablenreferenz auf Ländernamen des gerade aktiven Features (über e.target s.o.) 
-            var land_clicked = e.target.feature.properties.name_de;
-            console.log(land_clicked);
-            //Initialisierung des Arrays für Chronologie alle Fallzahlen eines Landes 
-            var cases_clicked_arr = [];
-            //Initialisierung des Arrays für Chronologie alle Todeszahlen eines Landes 
+            // Definition von Variablen
+            var land_clicked = e.target.feature.properties.name_de; 
+            var cases_clicked_arr = []; 
             var deaths_clicked_arr = [];
-            //Initialisierung des Arrays für Chronologie alle Datumsreferenzen eines Landes 
             var dates_clicked_arr = [];
-            //Befüllung des Array cases_clicked_arr mit allen Fallzahlen/Todeszahlen eines Landes 
             cases_clicked_arr = e.target.feature.properties.ajcases;
             deaths_clicked_arr = e.target.feature.properties.ajdeath;
-            //Befüllung Array dates_clicked_arr mit allen Datumsreferenzen zu Fallzahlen d. Landes 
             dates_clicked_arr = e.target.feature.properties.ajdate;
+            
             //Interpretation der Stringinhalte als Arrayobjekte über eval() 
             cases_clicked_arr = eval(cases_clicked_arr);
             dates_clicked_arr = eval(dates_clicked_arr);
             deaths_clicked_arr = eval(deaths_clicked_arr);
-
-            // Kombinierte Variablen von Fällen und Toden ////////////////////////////////////////////////////////////
+            
+            console.log(land_clicked);
+            ///////////// Kombinierte Variablen von Fällen und Toden ///////////////////////////////////////
             //Initialisierung des mehrdimensionalen Arrays (Tag, Fälle, Todeszahlen) des gewählten Landes 
             var daycount_cases_deaths_clicked_arr = [];
             //Initialisierung des mehrdimensionalen Arrays (Tag, Fallzahlen, Todeszahlen, Datum) des Landes 
@@ -457,12 +453,12 @@
             //Variablendefinition Zähler für nachfolgende For-Schleife 
             cases_count = cases_clicked_arr.length;
             
-            //Zusammenstellung der mehrdimensionalen Arrays für das ausgewählte Land für Fälle, Tode
+            //Zusammenstellung der mehrdimensionalen Arrays für das ausgewählte Land für Tage, Fälle und Tode
             for (var i = 0; i < cases_count; i++) {   
-                daycount_cases_deaths_clicked_arr[i] = [i,cases_clicked_arr[i], deaths_clicked_arr[i]]; 
+                daycount_cases_deaths_clicked_arr[i] = [i, cases_clicked_arr[i], deaths_clicked_arr[i]]; 
 
                 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                //### Hiermit könnte man die Daten in die x-Achse bringen, inedm bei der drawBasic Funktion unten ein Datafeldspalte > data.addColumn('date', 'Datum') hinzugefügt wird! Bei addRows müsste dann das folgende Array eingefügt werden und die Darstellungen in den Optionen angepasst(Johann Teske 23.06.2020)
+//### Hiermit könnte man die Daten in die x-Achse bringen, inedm bei der drawBasic Funktion unten ein Datafeldspalte > data.addColumn('date', 'Datum') hinzugefügt wird! Bei addRows müsste dann das folgende Array eingefügt werden und die Darstellungen in den Optionen angepasst(Johann Teske 23.06.2020)
                 daycount_cases_deaths_dates_clicked_arr[i] = [i, cases_clicked_arr[i], deaths_clicked_arr[i], new Date(dates_clicked_arr[i].replace(/#|-/g, ', '))];  
             }
 
@@ -473,7 +469,7 @@
                 // Aufruf der Google Chart Zeichenmethode mit den entsprechenden Arrays des ausgewählten Landes als Parameter
                 drawBasic(daycount_cases_deaths_clicked_arr, daycount_cases_deaths_dates_clicked_arr, land_clicked, cases_count, dates_clicked_arr);
             }); 
-        }//////////////////////////////ENDE ClickOnFeature //////////////////////
+        }////////////////////////////// ENDE ClickOnFeature //////////////////////
 
         ///Funktion drawBasic ///
         function drawBasic(daycount_cases_deaths_clicked_arr, daycount_cases_deaths_dates_clicked_arr, land_clicked, cases_count, dates_clicked_arr) {
@@ -531,7 +527,7 @@
                 // Aufruf der Google Chart Zeichenmethode mit den entsprechenden Arrays des ausgewählten Landes als Parameter
                 drawBasicPie(country_cases, world_cases_remaining, land_clicked);
             }); 
-        }//////////////////////////////ENDE ClickOnFeature_Pie //////////////////////
+        }////////////////////////////// ENDE ClickOnFeature_Pie //////////////////////
 
         function drawBasicPie(country_cases, world_cases_remaining, land_clicked) {
             
@@ -554,6 +550,8 @@
         }///////////// Ende der drawBasic Funktion für das PieDiagramm //////////////////
         /////////////////////////////////////////////////////////////////// Ende Oster Aufgabe 5 ///////////////////////////////////////////////////////////////////
         
+
+
 
         ///Methodenaufruf zur Integration des GeoJSON Layers in das L-Mapobjekt
         map.addLayer(geojsonLayer);
