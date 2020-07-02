@@ -152,6 +152,10 @@
         //////////////////////////////////////////////////////
         var cases_world = 0;
 
+        // Minichart Color
+        var mc_color1 = "#4e8ade";
+        var mc_color2 = "#de5f4e";
+
 
         ///NEU CHROMA.JS - Definition der Farbabstufungen mit chroma.js
         colorRamp = chroma.scale(['white', 'yellow','red','black']).correctLightness().classes(numb_classes); //Farbstufenanzhal aus numb_classes für Deaths/Pop
@@ -312,7 +316,7 @@
                             maxValues: 100000,
                             width: 40, 
                             height: 40,
-                            colors: ["#4e8ade", "#de5f4e"]
+                            colors: [mc_color1, mc_color2]
                             });
                     map.addLayer(charts[d.name_de]);
                 }    
@@ -606,6 +610,10 @@
                     grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
             }
 
+            div.innerHTML += '<p>Stabdiagramme: </p>';
+            div.innerHTML += '<i style="background:' + mc_color1 + '"></i> ' + ' Anzahl Fälle <br>';
+            div.innerHTML += '<i style="background:' + mc_color2 + '"></i> ' + ' Anzahl Tode';
+
             div.innerHTML += '<p style="font-size: 10px;">Letzte Aktualisierung: <br>siehe einzelne Länder <p>';
             return div;
         };
@@ -632,6 +640,10 @@
                     '<i style="background:' + colorRamp1((i / numb_classes_cases)) + '"></i> ' +
                     grades_arr1[i] + (grades_arr1[i + 1] ? '&ndash;' + grades_arr1[i + 1] + '<br>' : '+');
             }
+
+            div.innerHTML += '<p>Stabdiagramme: </p>';
+            div.innerHTML += '<i style="background:' + mc_color1 + '"></i> ' + ' Anzahl Fälle <br>';
+            div.innerHTML += '<i style="background:' + mc_color2 + '"></i> ' + ' Anzahl Tode';
 
             div.innerHTML += '<p style="font-size: 10px;">Letzte Aktualisierung: <br>siehe einzelne Länder <p>';
             return div;
