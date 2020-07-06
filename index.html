@@ -4,64 +4,123 @@
 <head>
   <meta charset="utf-8">
   <title>Projekt Teske </title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
   <h2>GeoApp 2020 Hochschule München</h2>
-  <h4>von Johann Teske</h4>
-  <h3 style="margin-top: 2rem;">Teil Daten und Server (Klauer)</h3>
-  <ul>
-    <li>
-      <a href="http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/wms?service=WMS&version=1.1.0&request=GetMap&layers=teske%3Acovid19_new&bbox=-180.0%2C-89.99892578125%2C180.0%2C83.599609375&width=768&height=370&srs=EPSG%3A4326&format=text%2Fhtml%3B%20subtype%3Dopenlayers">Aufgabenstellung 3</a>
-    </li>
-    <li>
-      <a href="pages/index-covid.html">Aufgabenstellung 4</a>
-    </li>
-    <li>
-      <a href="pages/klauer_aufgabe5.html">Prüfungsaufgabe: Aufgabenstellung 5</a>
-    </li>
-    <li>
-      <a href="http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/wms?service=WMS&version=1.1.0&request=GetMap&layers=teske%3Aosm_buildings&bbox=996630.5625%2C5993534.0%2C1542612.875%2C6544811.5&width=760&height=768&srs=EPSG%3A3857&format=application/openlayers#">Aufgabenstellung 6</a>
-    </li>
-  </ul>
-  <h3 style="margin-top: 2rem;">Teil Oster</h3>
-  <ul>
-    <h4 style="margin-bottom: 1rem;">Aufgabenstellung 1:</h4>
-    <li>
-      <a href="pages/oster_aufgabe1a.html">Aufgabe 1a</a>
-    </li>
-    <li>
-      <a href="pages/oster_aufgabe1b.html">Aufgabe 1b</a>
-    </li>
-    <li>
-      <a href="pages/oster_aufgabe1c.html">Aufgabe 1c</a>
-    </li>
-  </ul>
 
-  <ul>
-    <h4 style="margin-bottom: 1rem;">Aufgabenstellung 2:</h4>
-    <li>
-      <a href="pages/oster_aufgabe2a.html">Aufgabe 2a</a>
-    </li>
-    <li>
-      <a href="pages/oster_aufgabe2b.html">Aufgabe 2b</a>
-    </li>
-  </ul>
+  <button class="tablink" onclick="openPage('Home', this, '#006c78')" id="defaultOpen">Home</button>
+  <button class="tablink" onclick="openPage('Klauer', this, '#4cada2')">Klauer</button>
+  <button class="tablink" onclick="openPage('Oster', this, '#4cada2')">Oster</button>
+  <button class="tablink" onclick="openPage('About', this, '#006c78')">About</button>
 
-  <ul>
-    <h4 style="margin-bottom: 1rem;">Aufgabenstellung 3:</h4>
-    <li>
-      <a href="pages/oster_aufgabe3.html">Aufgabe 3</a>
-    </li>
-  </ul>
+  <div id="Home" class="tabcontent">
+    <h1>Home</h1>
+    <h2 style="margin-bottom: 4rem;">GeoApp-Enwticklung (Geoinformatik III)</h2>
+    <p>Das Ziel diese Moduls ist, eine Android App zu entwicklen!</p>
+    <p>Thema: Coronavirus - Covid19</p>
+    <h3 style="margin-top: 3rem;">Lerninhalte:</h3>
+    <ul><h4>Programmiersprachen:</h4>
+      <li> SQL </li>
+      <li> HTML </li>
+      <li> JavaScript </li>
+      <li> Java </li>
+    </ul>
+    <ul><h4>Verwendete Entwicklungsumgebungen:</h4>
+      <li> Visual Studio Code </li>
+      <li> Android Studio </li>
+      <li> pgAdmin </li>
+    </ul>
 
-  <!--<ul>
-    <h4 style="margin-bottom: 1rem;">Aufgabenstellung 4-6:</h4>
-    <li>
-      <a href="pages/oster_aufgabe4-6.html">Aufgabe 4-6</a>
-    </li>
-  </ul>-->
+    <div style="margin-top: 4rem;">
+      <h3>Downlaod der Fertigen Android App: <a href="#">Hier!</a></h3>
+    </div>
+    
+  </div>
+
+  <div id="Klauer" class="tabcontent">
+    <h1>Klauer</h1>
+    <h2>Teil Datenverarbeitung und Server</h2>
+    <div style="margin-top: 4rem;">
+
+      <h4><a href="http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/wms?service=WMS&version=1.1.0&request=GetMap&layers=teske%3Acovid19_new&bbox=-180.0%2C-89.99892578125%2C180.0%2C83.599609375&width=768&height=370&srs=EPSG%3A4326&format=text%2Fhtml%3B%20subtype%3Dopenlayers">Aufgabenstellung 3</a></h4>
+         
+      <h4><a href="pages/index-covid.html">Aufgabenstellung 4</a></h4>
+
+      <h4><a href="pages/klauer_aufgabe5.html">Prüfungsaufgabe: Aufgabenstellung 5</a></h4>
+
+      <h4><a href="http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/wms?service=WMS&version=1.1.0&request=GetMap&layers=teske%3Aosm_buildings&bbox=996630.5625%2C5993534.0%2C1542612.875%2C6544811.5&width=760&height=768&srs=EPSG%3A3857&format=application/openlayers#">Aufgabenstellung 6</a></h4>
+
+    </div>
+  </div>
+
+  <div id="Oster" class="tabcontent">
+    <h1>Oster</h1>
+    <h2>Visualisierung & Design</h2>
+    <div>
+        <h3 style="margin-bottom: 1rem;">Aufgabenstellung 1</h3>
+          
+          <h4><a href="pages/oster_aufgabe1a.html">Aufgabe 1a</a></h4>
+
+          <h4><a href="pages/oster_aufgabe1b.html">Aufgabe 1b</a></h4>
+
+          <h4><a href="pages/oster_aufgabe1c.html">Aufgabe 1c</a></h4>
+          
+        <h3 style="margin-bottom: 1rem;">Aufgabenstellung 2</h3>
+          
+          <h4><a href="pages/oster_aufgabe2a.html">Aufgabe 2a</a></h4>
+
+          <h4><a href="pages/oster_aufgabe2b.html">Aufgabe 2b</a></h4>
+
+
+        <h3 style="margin-bottom: 1rem;">Aufgabenstellung 3</h3>
+
+          <h4><a href="pages/oster_aufgabe3.html">Aufgabe 3</a></h4>
+          
+        <h3 style="margin-bottom: 1rem;">Aufgabenstellung 4-6</h3>
+          
+        <!-- <h4><a href="pages/oster_aufgabe4-6.html">Aufgabe 4-6</a></h4> -->
+
+    </div>
+  </div>
+
+  <div id="About" class="tabcontent">
+    <div style="margin-bottom: 4rem;">
+      <h1>About</h1>
+      <h3>Diese Website fügt alle Aufgaben des Sommersemester 2020 zusammen.</h3>
+    </div>
+    <div>
+      <p>&copy;Johann Teske</p>
+      <p>Kartographie und Geomedientechnik</p>
+      <p>GeoApp-Enwticklung (Geoinformatik III)</p>
+      <p>Sommersemester 2020</p>
+    </div>
+  </div>
+
+<h6>&copy; Johann Teske</h6>
+
 
 </body>
+
+
+<script>
+  function openPage(pageName, elmnt, color) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablink");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].style.backgroundColor = "";
+    }
+    document.getElementById(pageName).style.display = "block";
+    elmnt.style.backgroundColor = color;
+  }
+
+  // Get the element with id="defaultOpen" and click on it
+  document.getElementById("defaultOpen").click();
+</script>
 
 </html>
