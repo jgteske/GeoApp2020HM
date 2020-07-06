@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <link rel="shortcut icon" type="image/x-icon" href="../res/img/virus.svg">
+    <title>Teske - CoronaWelt</title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="stylesheet" href="../css/leaflet.css" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="../js/leaflet.js" crossorigin=""></script>
+    <script src="../js/jquery-3.5.0.min.js" crossorigin=""></script>
+
+    <!-- Einbinden von Leaflet Minichart-->
+    <script src="https://unpkg.com/leaflet.minichart/dist/leaflet.minichart.min.js" charset="utf-8"></script>
+
+    <!--//Chrome.js - Bibliothek --- Neu 20.04.20  (https://gka.github.io/chroma.js/#color-scales)-->
+    <script src="../js/chroma.js" crossorigin=""></script>
+    <!--Google Charts Library-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+
+    <!-- ///////Stildefinitionen für Leaflet Map\\\\\\\\-->
+    <style>
+        #map {
+            width: 800px;
+            height: 500px;
+        }
+
+        .info {
+            padding: 6px 8px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        .info h4 {
+            margin: 0 0 5px;
+            color: #777;
+        }
+
+        .legend {
+            text-align: left;
+            line-height: 18px;
+            color: #555;
+        }
+
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+    </style>
+    <!-- ///////Ende Stildefinitionen für Leaflet Map\\\\\\\\-->
+</head>
+
+
+<body>
+    <div class="page-container">
+        <div class="grid">
+            <div>
+                <h1 style="color: #333">Coronavirus</h1>
+                <h3>Infokarte zu aktuellen Zahlen des Virus</h3>
+            </div>
+            <div>
+                <img class="image" src="../res/img/research.png">
+            </div>
+        </div>
+
+        <!-- ///////Definition des DIV-Containers\\\\\\\\-->
+        <div id="mapid" style="width: 100%; height: 750px;"></div>
+
+        <!-- Kontainer für die Google Charts -->
+        <div id="chart_div"></div>
+        <div id="piechart_div"></div>
+
+        <!-- Navigationsteil-->
+        <p style="margin-bottom: 2rem;"><a href="../index.html">Zurück zur Projektseite</a></p>
+
+    </div>
+    <script>
+        ///////Layerorganisation der Hintergrundkarten\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+        googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: "<a href=\'http://maps.google.com/\'>Google</a> Maps Satellite",
+            noWrap: true
+        });
+
+        googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: "<a href=\'http://maps.google.com/\'>Google</a> Maps",
+            noWrap: true
+        });
+
+        osmMapnik = new L.tileLayer(
+            'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                maxZoom: 20,
+                attribution: 'Map data © OpenStreetMap contributors'
+            }
+        );
+
+        osmMapnikbw = new L.tileLayer(
+            'http://{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png',
+            {
+                maxZoom: 20,
+                attribution: 'Map data © OpenStreetMap contributors'
+            }
+        );
+
+        //////////////////////////////////////////////////////////////
+        ////ANLAGE DES LEAFLET MAP_OBJEKTES
+        var map = L.map('mapid', {
+            center: [0, 0],
+            zoom: 2,
+            layers: [googleSat, googleStreets, osmMapnik, osmMapnikbw]
+        });///////////////////////////////////////////////////////////
+
+
+        //Initialisierung der Legende und Positionierung
+        var legend_ger_deaths = L.control({ position: 'bottomright' });
+        var legend_bay_deaths = L.control({ position: 'bottomright' });
+        var legend_ger_cases = L.control({ position: 'bottomright' });
+        var legend_bay_cases = L.control({ position: 'bottomright' });
+        // Welt
+        var legend_deaths = L.control({ position: 'bottomright' });
+        var legend_cases = L.control({ position: 'bottomright' });
+
+
+
+        ///////////////////////////////////////////////////////
+        ///Variableninitialisierung für Statistikberechnungen
+        var deaths_per_pop_ger = 0;
+        var max_deaths_ger = 0;
+        var max_deaths_per_pop_ger = 0;
+
+        var cases_per_pop_ger = 0;
+        var max_cases_ger = 0;
+        var max_cases_per_pop_ger = 0;
+
+        var deaths_per_pop_bay = 0;
+        var max_deaths_bay = 0;
+        var max_deaths_per_pop_bay = 0;
+
+        var cases_per_pop_bay = 0;
+        var max_cases_bay = 0;
+        var max_cases_per_pop_bay = 0;
+
+        // Welt
+        var deaths_per_pop = 0;
+        var cases_per_pop = 0;
+        var max_sdeaths = 0;
+        var max_scases = 0;
+        var max_deaths_per_pop = 0;
+        var max_cases_per_pop = 0;
+
+        //////KONFIGURIERBAR////////////////
+        //Maximalwert für deaths_per_pop_ger der für die Generierung der Choropletenkarte und Legende berücksichtigt wird
+        ////Damit können Extremwerte wie z.B. bei Zwergstaaten abgeschwächt werden !!!
+        var max_deaths_per_pop_allowed_ger = 20;
+        var max_deaths_per_pop_allowed_bay = 60;
+        var max_cases_per_pop_allowed_ger = 500;
+        var max_cases_per_pop_allowed_bay = 800;
+        // Welt
+        var max_deaths_per_pop_allowed = 50;
+        var max_cases_per_pop_allowed = 800;
+        ////////////////////////////////////
+        //Anzahl der Farbstufenklassen bzw. Werteklassen für Choropletenkarte und Legende
+        var numb_classes_ger = 5;
+        var numb_classes_bay = 5;
+        var numb_classes_cases_ger = 7;
+        var numb_classes_cases_bay = 7;
+        // Welt
+        var numb_classes = 7;
+        var numb_classes_cases = 7;
+        ////////////////////////////////////
+
+        //Klassenbreite im Range von 0-1 abhängig von Klassenzahl
+        var classwidth_between_fac_ger = 1 / numb_classes_ger;
+        var classwidth_between_fac_bay = 1 / numb_classes_bay;
+        // Welt
+        var classwidth_between_fac = 1 / numb_classes;
+        //////Initialisierung Array für Fallzahlen zu den Einzelobjekten
+        var deaths_per_object_arr_ger = [];
+        var deaths_per_object_arr_bay = [];
+        var cases_per_object_arr_ger = [];
+        var cases_per_object_arr_bay = [];
+        // Welt
+        var deaths_per_object_arr = [];
+        var cases_per_object_arr = [];
+        //////Initialisierung Array für Verhältniszahl aus Fallzahlen zu Bevölkerung der Einzelobjekte    
+        var all_deaths_per_pop_arr_ger = [];
+        var all_deaths_per_pop_arr_bay = [];
+        var all_cases_per_pop_arr_ger = [];
+        var all_cases_per_pop_arr_bay = [];
+        // Welt
+        var all_deaths_per_pop_arr = [];
+        var all_cases_per_pop_arr = [];
+        //////////////////////////////////////////////////////
+
+        // Variable pro Einwohnerzahl/Bevölkerungszahl ///////
+        var per_pop_ger = 100000;
+        var per_pop_bay = 100000;
+        //////////////////////////////////////////////////////
+
+        /// Fälle auf der Welt für PieChart///
+        //////////////////////////////////////////////////////
+        var cases_world = 0;
+
+        // Minichart Color
+        var mc_color1 = "#4e8ade";
+        var mc_color2 = "#de5f4e";
+
+
+        ///NEU CHROMA.JS - Definition der Farbabstufungen mit chroma.js
+        colorRamp_death = chroma.scale(['gray', 'yellow']).gamma(0.75).correctLightness().classes(numb_classes_ger); //Farbstufenanzhal aus numb_classes_ger für Deaths/Pop
+        colorRamp_cases = chroma.scale(['lightblue', 'darkblue']).gamma(0.5).correctLightness().classes(numb_classes_cases_ger); //Farbstufenanzhal aus numb_classes_bay für Deaths/Pop
+        // Welt
+        colorRamp_cases_world = chroma.scale(['white', 'yellow', 'red', 'black']).correctLightness().classes(numb_classes); //Farbstufenanzhal aus numb_classes für Deaths/Pop
+        colorRamp_deaths_world = chroma.scale(['white', 'purple']).correctLightness().classes(numb_classes_cases); //Farbstufenanzhal aus numb_classes_cases für Cases/Pop
+
+
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////Covid Data via WFS / GeoJSON Import Spezifikationen//////////////////////////////////////////////////////////////////////
+
+        // --- Tote pro EWZ in den einzelnen Bundesländern --- //
+        var geojsonLayer_ger_deaths = new L.GeoJSON(null, { onEachFeature: onEachFeature_ger });
+
+        $.ajax({
+            url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
+            data: {
+                version: '1.0.0',
+                request: 'GetFeature',
+                service: 'WFS',
+                typeName: 'teske:covid19_ger_lan',
+                maxFeatures: '2000',
+                outputFormat: 'application/json'
+            },
+            dataType: 'json',
+            jsonpCallback: 'getJson',
+            success: handleJson_ger_deaths
+        });
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        /////Funktion handleJson mit Generierung der Properties Arrays und statistischen Vorbrechnungen
+        function handleJson_ger_deaths(data) {
+
+            //console.log(data);
+            geojsonLayer_ger_deaths.addData(data);
+
+
+            /////Stringkonvertierung der Einzelobjekt Properties der einzelnen Länder
+            jproperties = JSON.stringify(data.features.map(function (el) { return el.properties; }));
+            ////Parsen der Zeichenkette des JSON in JavaScript Objekt
+            js_objects_of_json_string = JSON.parse(jproperties);
+            /////////////////////////////////////////////////////////////////////////
+
+            ///Anzahl der Einzelobjekte bzw. Länder ermitteln
+            obj_count = js_objects_of_json_string.length;
+
+
+            /////For-Schleife mit der hier Todesfälle (gerdeaths) und Bevölkerungszahl (ewz) ausgelesen werden
+            for (var i = 0; i < obj_count; i++) {
+
+                if (js_objects_of_json_string[i]['ewz'] > 0) {
+                    deaths_per_pop_ger = (js_objects_of_json_string[i]['gerdeaths'] / js_objects_of_json_string[i]['ewz']) * per_pop_ger;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+
+                }
+
+                /////Arrays mit den Objektdaten füllen/////////////////////////////////////
+                deaths_per_object_arr_ger.push(js_objects_of_json_string[i]['gerdeaths']);
+                all_deaths_per_pop_arr_ger.push(deaths_per_pop_ger);
+
+            }////////////////////////////////////////////////////////////////////////////////////////////
+
+
+            /////Maximalwerte der Tode und der Verhälniszahl Tode pro 100.000 EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
+            max_deaths_ger = Math.max.apply(null, deaths_per_object_arr_ger);
+            max_deaths_per_pop_ger = Math.max.apply(null, all_deaths_per_pop_arr_ger);
+
+
+            //Maximalzahl der Tode auf Ganzzahl gerundet
+            max_deaths_per_pop_ger = Math.round(max_deaths_per_pop_ger);
+            //Begrenzung auf manuell festgelegten Maximalwert für deaths_per_popder der für Chropletenkarte und Legende berücksichtigt wird
+            if (max_deaths_per_pop_ger > max_deaths_per_pop_allowed_ger) { max_deaths_per_pop_ger = max_deaths_per_pop_allowed_ger };
+            /////////////////////////////////////////////////////////////////
+
+
+            ///Methodenaufruf Styledefinition des GeoJSON Layers
+            geojsonLayer_ger_deaths.setStyle(style_ger);
+
+            ///Methodenaufruf zur Generierung der Legende für das L-Mapobjekt
+            //legend_ger_deaths.addTo(map);
+
+        }/////Ende der Funktion handleJson_ger_deaths//////////////////////////////////////////////
+
+
+        // --- Tote pro EWZ in den den einzelnen Kreisen Bayerns --- //
+        var geojsonLayer_bay_deaths = new L.GeoJSON(null, { onEachFeature: onEachFeature_bay });
+
+        $.ajax({
+            url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
+            data: {
+                version: '1.0.0',
+                request: 'GetFeature',
+                service: 'WFS',
+                typeName: 'teske:covid19_bay_krs',
+                maxFeatures: '2000',
+                outputFormat: 'application/json'
+            },
+            dataType: 'json',
+            jsonpCallback: 'getJson',
+            success: handleJson_bay_deaths
+        });
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        /////Funktion handleJson mit Generierung der Properties Arrays und statistischen Vorbrechnungen
+        function handleJson_bay_deaths(data) {
+
+            //console.log(data);
+            geojsonLayer_bay_deaths.addData(data);
+
+
+            /////Stringkonvertierung der Einzelobjekt Properties der einzelnen Länder
+            jproperties = JSON.stringify(data.features.map(function (el) { return el.properties; }));
+            ////Parsen der Zeichenkette des JSON in JavaScript Objekt
+            js_objects_of_json_string = JSON.parse(jproperties);
+            /////////////////////////////////////////////////////////////////////////
+
+            ///Anzahl der Einzelobjekte bzw. Länder ermitteln
+            obj_count = js_objects_of_json_string.length;
+
+
+            /////For-Schleife mit der hier Todesfälle Bayern (baydeaths) und Bevölkerungszahl (krs_ewz) ausgelesen werden
+            for (var i = 0; i < obj_count; i++) {
+
+                if (js_objects_of_json_string[i]['krs_ewz'] > 0) {
+                    deaths_per_pop_bay = (js_objects_of_json_string[i]['baydeaths'] / js_objects_of_json_string[i]['krs_ewz']) * per_pop_bay;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+
+                }
+
+                /////Arrays mit den Objektdaten füllen/////////////////////////////////////
+                deaths_per_object_arr_bay.push(js_objects_of_json_string[i]['baydeaths']);
+                all_deaths_per_pop_arr_bay.push(deaths_per_pop_bay);
+
+            }////////////////////////////////////////////////////////////////////////////////////////////
+
+
+            /////Maximalwerte der Tode und der Verhälniszahl Tode pro EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
+            max_deaths_bay = Math.max.apply(null, deaths_per_object_arr_bay);
+            max_deaths_per_pop_bay = Math.max.apply(null, all_deaths_per_pop_arr_bay);
+
+
+            //Maximalzahl der Tode auf Ganzzahl gerundet
+            max_deaths_per_pop_bay = Math.round(max_deaths_per_pop_bay);
+            //Begrenzung auf manuell festgelegten Maximalwert für deaths_per_pop_ger der der für Chropletenkarte und Legende berücksichtigt wird
+            if (max_deaths_per_pop_bay > max_deaths_per_pop_allowed_bay) { max_deaths_per_pop_bay = max_deaths_per_pop_allowed_bay };
+            /////////////////////////////////////////////////////////////////
+
+            ///Methodenaufruf Styledefinition des GeoJSON Layers
+            geojsonLayer_bay_deaths.setStyle(style_bay);
+
+
+        }/////Ende der Funktion handleJson_bay_deaths//////////////////////////////////////////////
+
+
+        // --- Fälle pro EWZ in den einzelnen Bundesländern --- //
+        var geojsonLayer_ger_cases = new L.GeoJSON(null, { onEachFeature: onEachFeature_ger });
+
+        $.ajax({
+            url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
+            data: {
+                version: '1.0.0',
+                request: 'GetFeature',
+                service: 'WFS',
+                typeName: 'teske:covid19_ger_lan',
+                maxFeatures: '2000',
+                outputFormat: 'application/json'
+            },
+            dataType: 'json',
+            jsonpCallback: 'getJson',
+            success: handleJson_ger_cases
+        });
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        /////Funktion handleJson mit Generierung der Properties Arrays und statistischen Vorbrechnungen
+        function handleJson_ger_cases(data) {
+
+            //console.log(data);
+            geojsonLayer_ger_cases.addData(data);
+
+
+            /////Stringkonvertierung der Einzelobjekt Properties der einzelnen Länder
+            jproperties = JSON.stringify(data.features.map(function (el) { return el.properties; }));
+            ////Parsen der Zeichenkette des JSON in JavaScript Objekt
+            js_objects_of_json_string = JSON.parse(jproperties);
+            /////////////////////////////////////////////////////////////////////////
+
+            ///Anzahl der Einzelobjekte bzw. Länder ermitteln
+            obj_count = js_objects_of_json_string.length;
+
+
+            /////For-Schleife mit der hier Fallzahlen (gercases) und Bevölkerungszahl (ewz) ausgelesen werden
+            for (var i = 0; i < obj_count; i++) {
+
+                if (js_objects_of_json_string[i]['ewz'] > 0) {
+                    cases_per_pop_ger = (js_objects_of_json_string[i]['gercases'] / js_objects_of_json_string[i]['ewz']) * per_pop_ger;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+
+                }
+
+                /////Arrays mit den Objektdaten füllen/////////////////////////////////////
+                cases_per_object_arr_ger.push(js_objects_of_json_string[i]['gercases']);
+                all_cases_per_pop_arr_ger.push(cases_per_pop_ger);
+
+            }////////////////////////////////////////////////////////////////////////////////////////////
+
+
+            /////Maximalwerte der Fälle und der Verhälniszahl Fälle pro 100.000 EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
+            max_cases_ger = Math.max.apply(null, cases_per_object_arr_ger);
+            max_cases_per_pop_ger = Math.max.apply(null, all_cases_per_pop_arr_ger);
+
+
+            //Maximalzahl der Fälle auf Ganzzahl gerundet
+            max_cases_per_pop_ger = Math.round(max_cases_per_pop_ger);
+            //Begrenzung auf manuell festgelegten Maximalwert für cases_per_popder der für Chropletenkarte und Legende berücksichtigt wird
+            if (max_cases_per_pop_ger > max_cases_per_pop_allowed_ger) { max_cases_per_pop_ger = max_cases_per_pop_allowed_ger };
+            /////////////////////////////////////////////////////////////////
+
+
+            ///Methodenaufruf Styledefinition des GeoJSON Layers
+            geojsonLayer_ger_cases.setStyle(style_ger_cases);
+
+
+        }/////Ende der Funktion handleJson_ger_cases//////////////////////////////////////////////
+
+
+        // --- Fälle pro EWZ in den den einzelnen Kreisen Bayerns --- //
+        var geojsonLayer_bay_cases = new L.GeoJSON(null, { onEachFeature: onEachFeature_bay });
+
+        $.ajax({
+            url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
+            data: {
+                version: '1.0.0',
+                request: 'GetFeature',
+                service: 'WFS',
+                typeName: 'teske:covid19_bay_krs',
+                maxFeatures: '2000',
+                outputFormat: 'application/json'
+            },
+            dataType: 'json',
+            jsonpCallback: 'getJson',
+            success: handleJson_bay_cases
+        });
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        /////Funktion handleJson mit Generierung der Properties Arrays und statistischen Vorbrechnungen
+        function handleJson_bay_cases(data) {
+
+            //console.log(data);
+            geojsonLayer_bay_cases.addData(data);
+
+
+            /////Stringkonvertierung der Einzelobjekt Properties der einzelnen Länder
+            jproperties = JSON.stringify(data.features.map(function (el) { return el.properties; }));
+            ////Parsen der Zeichenkette des JSON in JavaScript Objekt
+            js_objects_of_json_string = JSON.parse(jproperties);
+            /////////////////////////////////////////////////////////////////////////
+
+            ///Anzahl der Einzelobjekte bzw. Länder ermitteln
+            obj_count = js_objects_of_json_string.length;
+
+
+            /////For-Schleife mit der hier Todesfälle (baycases) und Bevölkerungszahl (krs_ewz) ausgelesen werden
+            for (var i = 0; i < obj_count; i++) {
+
+                if (js_objects_of_json_string[i]['krs_ewz'] > 0) {
+                    cases_per_pop_bay = (js_objects_of_json_string[i]['baycases'] / js_objects_of_json_string[i]['krs_ewz']) * per_pop_bay;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+
+                }
+
+                /////Arrays mit den Objektdaten füllen/////////////////////////////////////
+                cases_per_object_arr_bay.push(js_objects_of_json_string[i]['baycases']);
+                all_cases_per_pop_arr_bay.push(cases_per_pop_bay);
+
+            }////////////////////////////////////////////////////////////////////////////////////////////
+
+
+            /////Maximalwerte der Fälle und der Verhälniszahl Fälle pro EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
+            max_cases_bay = Math.max.apply(null, cases_per_object_arr_bay);
+            max_cases_per_pop_bay = Math.max.apply(null, all_cases_per_pop_arr_bay);
+
+
+            //Maximalzahl der Fälle auf Ganzzahl gerundet
+            max_cases_per_pop_bay = Math.round(max_cases_per_pop_bay);
+            //Begrenzung auf manuell festgelegten Maximalwert für cases_per_popder der für Chropletenkarte und Legende berücksichtigt wird
+            if (max_cases_per_pop_bay > max_cases_per_pop_allowed_bay) { max_cases_per_pop_bay = max_cases_per_pop_allowed_bay };
+            /////////////////////////////////////////////////////////////////
+
+            ///Methodenaufruf Styledefinition des GeoJSON Layers
+            geojsonLayer_bay_cases.setStyle(style_bay_cases);
+
+
+        }/////Ende der Funktion handleJson_bay_cases//////////////////////////////////////////////
+
+
+        // --- Fälle auf der Welt ---
+        var geojsonLayer_cases = new L.GeoJSON(null, { onEachFeature: onEachFeature });
+
+        $.ajax({
+            url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
+            data: {
+                version: '1.0.0',
+                request: 'GetFeature',
+                service: 'WFS',
+                typeName: 'teske:covid19_aggregat',
+                maxFeatures: '2000',
+                outputFormat: 'application/json'
+            },
+            dataType: 'json',
+            jsonpCallback: 'getJson',
+            success: handleJson_cases
+        });
+
+        /////Funktion handleJson mit Generierung der Properties Arrays und statistischen Vorbrechnungen
+        function handleJson_cases(data) {
+
+            //console.log(data);
+            geojsonLayer_cases.addData(data);
+
+            /////Stringkonvertierung der Einzelobjekt Properties der einzelnen Länder
+            jproperties = JSON.stringify(data.features.map(function (el) { return el.properties; }));
+            ////Parsen der Zeichenkette des JSON in JavaScript Objekt
+            js_objects_of_json_string = JSON.parse(jproperties);
+            /////////////////////////////////////////////////////////////////////////
+
+            ///Anzahl der Einzelobjekte bzw. Länder ermitteln
+            obj_count = js_objects_of_json_string.length;
+
+
+            /////For-Schleife mit der hier Fälle (scases) und Bevölkerungszahl (mpop) ausgelesen werden
+            for (var i = 0; i < obj_count; i++) {
+
+                if (js_objects_of_json_string[i]['mpop'] > 0) {
+                    cases_per_pop = (js_objects_of_json_string[i]['scases'] / js_objects_of_json_string[i]['mpop']) * 100000;  ///hier mit Auslesen Berechnung Für Fälle pro 100.000 EW 
+
+                    // else hier nur temporär solgange bei Eritrea keine Einwohnerzahl in DB !!!
+                } else {
+                    if (js_objects_of_json_string[i]['name_de'] == "Eritrea") {
+                        cases_per_pop = (js_objects_of_json_string[i]['scases'] / 6050000) * 100000;
+                    }///////////////////////////////////////////////////////////////////////////				
+                }
+
+                /////Arrays mit den Objektdaten füllen/////////////////////////////////////
+                cases_per_object_arr.push(js_objects_of_json_string[i]['scases']);
+                all_cases_per_pop_arr.push(cases_per_pop);
+
+                //Berechnung der Gesammtfälle auf der Welt für das Pie Chart
+                cases_world = cases_world + js_objects_of_json_string[i]['scases'];
+
+            }////////////////////////////////////////////////////////////////////////////////////////////
+
+
+            /////Maximalwerte der Fälle und der Verhälniszahl Fälle pro 100.000 EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
+            max_scases = Math.max.apply(null, cases_per_object_arr);
+            max_cases_per_pop = Math.max.apply(null, all_cases_per_pop_arr);
+
+            //Maximalzahl der Fälle auf Ganzzahl gerundet
+            max_cases_per_pop = Math.round(max_cases_per_pop);
+            //Begrenzung auf manuell festgelegten Maximalwert für deaths_per_popder der für Chropletenkarte und Legende berücksichtigt wird
+            if (max_cases_per_pop > max_cases_per_pop_allowed) { max_cases_per_pop = max_cases_per_pop_allowed };
+            /////////////////////////////////////////////////////////////////
+
+
+            ///Methodenaufruf Styledefinition des GeoJSON Layers
+            geojsonLayer_cases.setStyle(style_cases);
+
+            ///Methodenaufruf zur Generierung der Legende für das L-Mapobjekt
+            legend_cases.addTo(map);
+
+            // Aufrufen der Balkendiagramm Funktion, um sie darzustellen
+            generateGraphsEurope(data);
+
+        }/////Ende der Funktion handleJson//////////////////////////////////////////////
+
+
+        // --- Tode der Welt ------
+
+        var geojsonLayer_deaths = new L.GeoJSON(null, { onEachFeature: onEachFeature });
+
+        $.ajax({
+            url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
+            data: {
+                version: '1.0.0',
+                request: 'GetFeature',
+                service: 'WFS',
+                typeName: 'teske:covid19_aggregat',
+                maxFeatures: '2000',
+                outputFormat: 'application/json'
+            },
+            dataType: 'json',
+            jsonpCallback: 'getJson',
+            success: handleJson_deaths
+        });
+
+        /////Funktion handleJson mit Generierung der Properties Arrays und statistischen Vorbrechnungen
+        function handleJson_deaths(data) {
+
+            //console.log(data);
+            geojsonLayer_deaths.addData(data);
+
+            /////Stringkonvertierung der Einzelobjekt Properties der einzelnen Länder
+            jproperties = JSON.stringify(data.features.map(function (el) { return el.properties; }));
+            ////Parsen der Zeichenkette des JSON in JavaScript Objekt
+            js_objects_of_json_string = JSON.parse(jproperties);
+            /////////////////////////////////////////////////////////////////////////
+
+            ///Anzahl der Einzelobjekte bzw. Länder ermitteln
+            obj_count = js_objects_of_json_string.length;
+
+
+            /////For-Schleife mit der hier Todesfälle (sdeaths) und Bevölkerungszahl (mpop) ausgelesen werden
+            for (var i = 0; i < obj_count; i++) {
+
+                if (js_objects_of_json_string[i]['mpop'] > 0) {
+                    deaths_per_pop = (js_objects_of_json_string[i]['sdeaths'] / js_objects_of_json_string[i]['mpop']) * 100000;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+
+                    // else hier nur temporär solgange bei Eritrea keine Einwohnerzahl in DB !!!
+                } else {
+                    if (js_objects_of_json_string[i]['name_de'] == "Eritrea") {
+                        deaths_per_pop = (js_objects_of_json_string[i]['sdeaths'] / 6050000) * 100000;
+                    }///////////////////////////////////////////////////////////////////////////				
+                }
+                /////Arrays mit den Objektdaten füllen/////////////////////////////////////
+                deaths_per_object_arr.push(js_objects_of_json_string[i]['sdeaths']);
+                all_deaths_per_pop_arr.push(deaths_per_pop);
+            }////////////////////////////////////////////////////////////////////////////////////////////
+
+            /////Maximalwerte der Fälle und der Verhälniszahl Fälle pro 100.000 EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
+            max_sdeaths = Math.max.apply(null, deaths_per_object_arr);
+            max_deaths_per_pop = Math.max.apply(null, all_deaths_per_pop_arr);
+
+            //Maximalzahl der Fälle auf Ganzzahl gerundet
+            max_deaths_per_pop = Math.round(max_deaths_per_pop);
+            //Begrenzung auf manuell festgelegten Maximalwert für deaths_per_popder der für Chropletenkarte und Legende berücksichtigt wird
+            if (max_deaths_per_pop > max_deaths_per_pop_allowed) { max_deaths_per_pop = max_deaths_per_pop_allowed };
+            /////////////////////////////////////////////////////////////////
+
+            ///Methodenaufruf Styledefinition des GeoJSON Layers
+            geojsonLayer_deaths.setStyle(style_deaths);
+
+            // Aufrufen der Balkendiagramm Funktion, um sie darzustellen
+            //generateGraphsEurope(data);
+
+        }/////Ende der Funktion handleJson//////////////////////////////////////////////
+
+
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////// STYLING für die einzelnen Karten//////////////////////////////////////
+
+        ///function Choropleth Map styling ///////////////////////////////
+        function style_ger(feature) {
+
+            //Berechnung der Todefälle pro 100.000 Einwohnwer aus Feature Properties gerdeaths und ewz eines Landes bei dem Sytlingprozess jedes Polygons
+            deaths_per_pop_ger = (feature.properties.gerdeaths / feature.properties.ewz) * per_pop_ger;
+
+            ratio_deaths_per_pop = deaths_per_pop_ger / max_deaths_per_pop_ger;
+
+            return {
+                ////Generierung der Polygonfärbung eines Objektes über Funktion mit Chroma.js
+                fillColor: colorRamp_death(ratio_deaths_per_pop),                  ///(ratio_deaths_per_pop+(classwidth_between_fac)), /// --Alternative, geht gut wenn nur: chroma.scale kontinuierlich ohne Klassen
+
+                weight: 2,
+                opacity: 1,
+                color: 'black',
+                dashArray: '3',
+                fillOpacity: 1
+
+            }
+
+        }////////////////////////////////////////////////
+
+        function style_bay(feature) {
+
+            //Berechnung der Todefälle pro 100.000 Einwohnwer aus Feature Properties gerdeaths und ewz eines Landes bei dem Sytlingprozess jedes Polygons
+            deaths_per_pop_bay = (feature.properties.baydeaths / feature.properties.krs_ewz) * per_pop_bay;
+
+            ratio_deaths_per_pop_bay = deaths_per_pop_bay / max_deaths_per_pop_bay;
+
+
+            return {
+                ////Generierung der Polygonfärbung eines Objektes über Funktion mit Chroma.js
+                fillColor: colorRamp_death(ratio_deaths_per_pop_bay),
+
+                weight: 2,
+                opacity: 1,
+                color: 'black',
+                dashArray: '3',
+                fillOpacity: 1
+
+            }
+        }////////////////////////////////////////////////
+
+        ///function Choropleth Map styling ///////////////////////////////
+        function style_ger_cases(feature) {
+
+            //Berechnung der Cases pro Einwohnwer aus Feature Properties gercases und ewz eines Landes bei dem Sytlingprozess jedes Polygons
+            cases_per_pop_ger = (feature.properties.gercases / feature.properties.ewz) * per_pop_ger;
+
+            ratio_cases_per_pop = cases_per_pop_ger / max_cases_per_pop_ger;
+
+
+            return {
+                ////Generierung der Polygonfärbung eines Objektes über Funktion mit Chroma.js
+                fillColor: colorRamp_cases(ratio_cases_per_pop),
+
+                weight: 2,
+                opacity: 1,
+                color: 'black',
+                dashArray: '3',
+                fillOpacity: 1
+
+            }
+
+        }////////////////////////////////////////////////
+
+        ///function Choropleth Map styling ///////////////////////////////
+        function style_bay_cases(feature) {
+
+            //Berechnung der Cases pro Einwohnwer aus Feature Properties gercases und ewz eines Landes bei dem Sytlingprozess jedes Polygons
+            cases_per_pop_bay = (feature.properties.baycases / feature.properties.krs_ewz) * per_pop_bay;
+
+            ratio_cases_per_pop = cases_per_pop_bay / max_cases_per_pop_bay;
+
+
+            return {
+                ////Generierung der Polygonfärbung eines Objektes über Funktion mit Chroma.js
+                fillColor: colorRamp_cases(ratio_cases_per_pop),
+
+                weight: 2,
+                opacity: 1,
+                color: 'black',
+                dashArray: '3',
+                fillOpacity: 1
+
+            }
+
+        }////////////////////////////////////////////////
+
+        ///function Choropleth Map styling Cases ///////////////////////////////
+        function style_cases(feature) {
+
+            //Berechnung der Todefälle pro 100.000 Einwohnwer aus Feature Properties sdeaths und mpop eines Landes bei dem Sytlingprozess jedes Polygons
+            cases_per_pop = (feature.properties.scases / feature.properties.mpop) * 100000;
+
+            //Nur temporär solgange bei Eritrea keine Einwohnerzahl in DB !!!
+            if (feature.properties.name_de == "Eritrea") {
+                cases_per_pop = (feature.properties.scases / 6050000) * 1000000;
+            }/////////////////////////////////////////////////////////////
+
+            ratio_cases_per_pop = cases_per_pop / max_cases_per_pop;
+
+
+            return {
+                ////Generierung der Polygonfärbung eines Objektes über Funktion mit Chroma.js
+                fillColor: colorRamp_cases_world(ratio_cases_per_pop),
+
+                weight: 0.5,
+                opacity: 1,
+                color: 'black',
+                dashArray: '1',
+                fillOpacity: 0.7
+
+            }
+
+        }////////////////////////////////////////////////
+
+        ///function Choropleth Map styling Deaths ///////////////////////////////
+        function style_deaths(feature) {
+
+            //Berechnung der Todefälle pro 100.000 Einwohnwer aus Feature Properties sdeaths und mpop eines Landes bei dem Sytlingprozess jedes Polygons
+            deaths_per_pop = (feature.properties.sdeaths / feature.properties.mpop) * 100000;
+
+            //Nur temporär solgange bei Eritrea keine Einwohnerzahl in DB !!!
+            if (feature.properties.name_de == "Eritrea") {
+                deaths_per_pop = (feature.properties.sdeaths / 6050000) * 1000000;
+            }/////////////////////////////////////////////////////////////
+
+            ratio_deaths_per_pop = deaths_per_pop / max_deaths_per_pop;
+
+
+            return {
+                ////Generierung der Polygonfärbung eines Objektes über Funktion mit Chroma.js
+                fillColor: colorRamp_deaths_world(ratio_deaths_per_pop),
+
+                weight: 0.5,
+                opacity: 1,
+                color: 'black',
+                dashArray: '1',
+                fillOpacity: 0.7
+
+            }
+
+        }////////////////////////////////////////////////
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///Generierung aller Popup-Fenster aus den JSON feature.properties///////////////////////////////
+
+        // Popupfenster für Deutschland
+        function onEachFeature_ger(feature, layer) {
+            layer.bindPopup(
+                '<h2>' + feature.properties.bl + '</h2>' +
+
+                'RS-Code: ' + feature.properties.rs + '<br>' +
+                'Einwohner: ' + feature.properties.ewz + ' EW<br>' +
+
+                '<h3 style="margin-bottom:0rem;">Aktuelle Gesamtdaten zu Covid-19</h3>' +
+                feature.properties.gercases + ' Fälle<br>' +
+                feature.properties.gerdeaths + ' Tote<br>' +
+                '<h3 style="margin-bottom:0rem;">Aktuelle Daten pro ' + per_pop_bay + ' Einwohner (gerundet): </h3>' +
+                Math.round(feature.properties.gercases / feature.properties.ewz * per_pop_ger) + ' Infizierte / EW<br>' +
+                Math.round(feature.properties.gerdeaths / feature.properties.ewz * per_pop_ger) + ' Tote / EW<br>' +
+                '<p style="font-size: 10px;">' + 'Letzte Aktualisierung: ' + feature.properties.last_update + '</p><br>'
+            );
+
+        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        // Popupfenster für Bayern
+        function onEachFeature_bay(feature, layer) {
+            layer.bindPopup(
+                '<h2>' + feature.properties.gen + '</h2>' +
+
+                'Kreis-ID: ' + feature.properties.id + '<br>' +
+                'Kreis Einwohner: ' + feature.properties.krs_ewz + ' EW<br>' +
+
+                '<h3 style="margin-bottom:0rem;">Aktuelle Gesamtdaten zu Covid-19</h3>' +
+                feature.properties.baycases + ' Fälle<br>' +
+                feature.properties.baydeaths + ' Tote<br>' +
+                '<h3 style="margin-bottom:0rem;">Aktuelle Daten pro ' + per_pop_bay + ' Einwohner (gerundet): </h3>' +
+                Math.round(feature.properties.baycases / feature.properties.krs_ewz * per_pop_bay) + ' Infizierte / EW<br>' +
+                Math.round(feature.properties.baydeaths / feature.properties.krs_ewz * per_pop_bay) + ' Tote / EW<br>' +
+                '<p style="font-size: 10px;">' + 'Letzte Aktualisierung: ' + feature.properties.last_update + '</p><br>'
+            );
+
+        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        ///Generierung aller Popup-Fenster aus den JSON feature.properties///////////////////////////////
+        function onEachFeature(feature, layer) {
+            layer.bindPopup(
+                '<h2>' + feature.properties.name_de + '</h2>' +
+
+                'ID: ' + feature.properties.id + '<br>' +
+                'Ländercode: ' + feature.properties.countrycode + '<br>' +
+                'Kontinent: ' + feature.properties.continent + '<br>' +
+                'Einwohner: ' + feature.properties.mpop + '<br>' +
+                '<br>' +
+                'Fälle: ' + feature.properties.scases + '<br>' +
+                'Todefälle: ' + feature.properties.sdeaths + '<br>' +
+                '<br>' +
+                'Infizierte/100.000 EW: ~' + Math.round(feature.properties.scases / feature.properties.mpop * 100000) + '<br>' +
+                'Tode/100.000 EW: ~' + Math.round(feature.properties.sdeaths / feature.properties.mpop * 100000) + '<br>' +
+                '<br>' +
+                '<p style="font-size: 10px;">Letzte Aktualisierung: ' + feature.properties.mdate + '<p>'
+            );
+            layer.on({
+                click: ClickOnFeature
+            });
+            layer.on({
+                click: ClickOnFeature_Pie
+            });
+
+        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////// Generieren der Balkendiagramme mit dieser Funktion ///////////////////////////////////////
+        //
+        /////////////////////////////////////////////////////////////  Oster Aufgabe 6 //////////////////////////////////////////////////////////////////
+        // Schleife um Mitten für einzelne Elemente herauszufinden
+        // Alle einzelnen Balkendiagramme werden hier in eine LayerGroup eingebunden, um alle zusammen anzusprechen
+        // Balkendiagramme werden nur für Europa angezeigt, da danach gefiltert wird
+        var graphLayerGroup = new L.layerGroup();
+        function generateGraphsEurope(data) {
+            jgeometry = JSON.stringify(data.features.map(function (el) { return el; }));
+            ////Parsen der Zeichenkette des JSON in JavaScript Objekt
+            js_geometry_object = JSON.parse(jgeometry);
+
+            var center_point_arr = [];
+
+            // Erstellen eines Array um die einzelnen Mittelpunkte der Länder zu bekommen
+            for (var i = 0; i < obj_count; i++) {
+
+                var centre_point_single = new L.GeoJSON(js_geometry_object[i]).addTo(map);
+                centre_point = centre_point_single.getBounds().getCenter();
+                centre_point_single_values = Object.values(centre_point);
+                centre_point_single.remove();
+                center_point_arr[i] = centre_point_single_values;
+            }
+
+
+            // Einbindung Leaflet.minichart für die Karte
+            // Darstellung von Fällen und Toden in einem Diagramm auf jeden Land
+            // https://rte-antares-rpackage.github.io/leaflet.minichart/tutorial-PISA%20scores.html
+
+            var charts = {};
+
+
+            for (var i = 0; i < obj_count; i++) {
+                var d = js_objects_of_json_string[i];
+                var cnt = { lan: center_point_arr[i][0], lon: center_point_arr[i][1] };
+                // Komination von beiden Arrays
+                d = { ...d, ...cnt };
+
+                if (d.continent == "Europe" & d.scases !== null & d.sdeaths !== null) {
+                    var chartData = [
+                        d.scases,
+                        d.sdeaths
+                    ];
+
+                    charts[d.name_de] = L.minichart(
+                        [d.lan, d.lon],
+                        {
+                            data: chartData,
+                            maxValues: 100000,
+                            width: 40,
+                            height: 40,
+                            colors: [mc_color1, mc_color2]
+                        });
+
+                    graphLayerGroup.addLayer(charts[d.name_de]);
+                }
+            } ////////////////////////////////////////////////////////// Ende Oster Aufgabe 6 //////////////////////////////////////////////////////////////////
+        }
+
+
+        /////////////////////////////////////////////////////////////////// Oster Aufgabe 4 ///////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // Berechnungen für Google Charts mit der ClickOnFeature Funktion
+
+        function ClickOnFeature(e) {
+            e.target.setStyle({
+                color: 'red'
+            })
+            // Definition von Variablen
+            var land_clicked = e.target.feature.properties.name_de;
+            var cases_clicked_arr = [];
+            var deaths_clicked_arr = [];
+            var dates_clicked_arr = [];
+            cases_clicked_arr = e.target.feature.properties.ajcases;
+            deaths_clicked_arr = e.target.feature.properties.ajdeath;
+            dates_clicked_arr = e.target.feature.properties.ajdate;
+
+            //Interpretation der Stringinhalte als Arrayobjekte über eval() 
+            cases_clicked_arr = eval(cases_clicked_arr);
+            dates_clicked_arr = eval(dates_clicked_arr);
+            deaths_clicked_arr = eval(deaths_clicked_arr);
+
+            console.log(land_clicked);
+            ///////////// Kombinierte Variablen von Fällen und Toden ///////////////////////////////////////
+            //Initialisierung des mehrdimensionalen Arrays (Tag, Fälle, Todeszahlen) des gewählten Landes 
+            var daycount_cases_deaths_clicked_arr = [];
+            //Initialisierung des mehrdimensionalen Arrays (Tag, Fallzahlen, Todeszahlen, Datum) des Landes 
+            var daycount_cases_deaths_dates_clicked_arr = [];
+
+            //Umkehrung der zeitl. Chronologie v. Fällen und Datumsreferenzen für aufsteigende Richtung 
+            cases_clicked_arr = cases_clicked_arr.reverse();
+            dates_clicked_arr = dates_clicked_arr.reverse();
+            deaths_clicked_arr = deaths_clicked_arr.reverse();
+
+            //Variablendefinition Zähler für nachfolgende For-Schleife 
+            cases_count = cases_clicked_arr.length;
+
+            //Zusammenstellung der mehrdimensionalen Arrays für das ausgewählte Land für Tage, Fälle und Tode
+            for (var i = 0; i < cases_count; i++) {
+                daycount_cases_deaths_clicked_arr[i] = [i, cases_clicked_arr[i], deaths_clicked_arr[i]];
+
+                daycount_cases_deaths_dates_clicked_arr[i] = [new Date(dates_clicked_arr[i].replace(/#|-/g, ', ')), cases_clicked_arr[i], deaths_clicked_arr[i]];
+            }
+
+            //Definition des Diagrammtyps mit dem Einladen der notwendigen Packages
+            google.charts.load('current', { packages: ['corechart', 'line'] });
+            //Wenn Das Einladen der Packages abgeschlossen ist, dann startet der Generierungsaufruf
+            google.charts.setOnLoadCallback(function () {
+                // Aufruf der Google Chart Zeichenmethode mit den entsprechenden Arrays des ausgewählten Landes als Parameter
+                drawBasic(daycount_cases_deaths_dates_clicked_arr, land_clicked, cases_count);
+            });
+        }////////////////////////////// ENDE ClickOnFeature //////////////////////
+
+        ///Funktion drawBasic ///
+        function drawBasic(daycount_cases_deaths_dates_clicked_arr, land_clicked, cases_count) {
+            var data = new google.visualization.DataTable();
+            //Anlage der Datentabelle für Grafik (Datentyp und Spaltenname)
+            data.addColumn('date', 'Tage');
+            data.addColumn('number', 'Fälle');
+            data.addColumn('number', 'Tode');
+            //Befüllung der Tabelle mit den Werten für das zuletzt ausgewählte Land
+            data.addRows(daycount_cases_deaths_dates_clicked_arr);
+
+            //Referenz auf Dokument Objekt des div-Containers als neues Line Chart Objekt 
+            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+
+            var options = {
+
+                title: land_clicked + ' - Zahlen zu Covid19 mit zeitlichem Verlauf: von ' + daycount_cases_deaths_dates_clicked_arr[0][0].toISOString().substring(0, 10) + ' bis ' + daycount_cases_deaths_dates_clicked_arr[cases_count - 1][0].toISOString().substring(0, 10),
+                //width: 1000,
+                height: 300,
+                series: {
+                    0: { targetAxisIndex: 0 },
+                    1: { targetAxisIndex: 1 },
+                },
+                vAxes: {
+                    // Titel für Axe mit series Index
+                    0: { title: 'Fallzahlen' },
+                    1: { title: 'Todeszahlen' }
+                },
+                hAxis: {
+                    title: 'Tage',
+                    format: 'M/d/yy',
+                    gridlines: { count: 15 }
+
+                },
+                backgroundColor: '#ebe5e5'
+
+            };
+            chart.draw(data, options);
+        }///////////// Ende der drawBasic Funktion für das LineChart Diagramm //////////////////
+        /////////////////////////////////////////////////////////////////// Ende Oster Aufgabe 4 ///////////////////////////////////////////////////////////////////
+
+
+        /////////////////////////////////////////////////////////////////// Oster Aufgabe 5 ///////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        // Berechnungen für Google Pie Chart mit der ClickOnFeature Funktion
+
+        function ClickOnFeature_Pie(e) {
+            //Variablenreferenz auf Ländernamen des gerade aktiven Features (über e.target s.o.) 
+            var land_clicked = e.target.feature.properties.name_de;
+
+            var country_cases = e.target.feature.properties.scases;
+            var world_cases_remaining = cases_world - country_cases;
+
+            //Definition des Diagrammtyps mit dem Einladen der notwendigen Packages
+            google.charts.load('current', { packages: ['corechart'] });
+            //Wenn Das Einladen der Packages abgeschlossen ist, dann startet der Generierungsaufruf
+            google.charts.setOnLoadCallback(function () {
+                // Aufruf der Google Chart Zeichenmethode mit den entsprechenden Arrays des ausgewählten Landes als Parameter
+                drawBasicPie(country_cases, world_cases_remaining, land_clicked);
+            });
+        }////////////////////////////// ENDE ClickOnFeature_Pie //////////////////////
+
+        function drawBasicPie(country_cases, world_cases_remaining, land_clicked) {
+
+            var data = google.visualization.arrayToDataTable([
+                ['Betroffene', 'Anzahl'],
+                ['Fälle Land', country_cases],
+                ['Fälle weltweit', world_cases_remaining]
+            ]);
+            var options = {
+                title: land_clicked + ' - Covid19 Fälle im Vergleich mit den weltweiten Fällen',
+                //width: 600,
+                height: 400,
+                backgroundColor: '#d2f7e9'
+            };
+
+            var chart = new google.visualization.PieChart(document.getElementById('piechart_div'));
+
+            chart.draw(data, options);
+
+        }///////////// Ende der drawBasic Funktion für das PieDiagramm //////////////////
+        /////////////////////////////////////////////////////////////////// Ende Oster Aufgabe 5 ///////////////////////////////////////////////////////////////////
+
+
+
+        ///Methodenaufruf zur Integration des GeoJSON Layers in das L-Mapobjekt
+        map.addLayer(geojsonLayer_cases);
+        map.addLayer(graphLayerGroup); // erstes Aufrufen der Balkendiagramme
+        //map.addLayer(geojsonLayer_bay_deaths);
+        ///////////////////////////////////////////////////////////////////////
+
+
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Defintion der Layer controls////////////////////////////////////
+        var baseMaps = {
+            "googleSat": googleSat,
+            "googleStreets": googleStreets,
+            "osmMapnik": osmMapnik,
+            "osmMapnikbw": osmMapnikbw
+        };
+
+        var overlayMaps = {
+            "Welt - Covid19 Fälle": geojsonLayer_cases,
+            "Welt - Covid19 Tote": geojsonLayer_deaths,
+            "Deutschland - Covid19 Fälle": geojsonLayer_ger_cases,
+            "Deutschland - Covid19 Tote": geojsonLayer_ger_deaths,
+            "Bayern - Covid19 Fälle": geojsonLayer_bay_cases,
+            "Bayern - Covid19 Tote": geojsonLayer_bay_deaths
+
+        };
+
+        L.control.layers(baseMaps).addTo(map);
+        L.control.layers(overlayMaps).addTo(map);
+        ///////////////////////////////////////////////////////////////////
+
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////Defintion der Legende Fallzahlen pro 100.000 Einwohner bei Methode OnAdd mit dynamisccher Generierung der Klassenstufen
+
+        // --- Legende für Tode in Deutschland --- //
+        legend_ger_deaths.onAdd = function (map) {
+
+            grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
+
+            //Generierung der Zahlenwerte der Klassen für die Legende
+            for (var i = 0; i < numb_classes_ger; i++) {
+                grades_arr.push(Math.round(max_deaths_per_pop_ger * (classwidth_between_fac * i)));
+            }////////////////////////////////////////////////////////
+
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades_arr,
+                labels = [];
+            div.innerHTML += '<h4>Legende</h4>';
+            div.innerHTML += '<p>Tote pro ' + per_pop_ger + ' EW:</p>';
+
+            ////Loop through our density intervals and generate a label with a colored square for each interval
+            ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
+            for (var i = 0; i < grades_arr.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + colorRamp_death((i / numb_classes_ger)) + '"></i> ' +
+                    grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
+            }
+            div.innerHTML += '<p style="font-size: 10px">Für die Aktualität der Daten <br> siehe einzelne Bundesländer!</p>';
+
+            return div;
+        };
+
+        // --- Legende für Tode in Bayern --- //
+        legend_bay_deaths.onAdd = function (map) {
+
+            grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
+
+            //Generierung der Zahlenwerte der Klassen für die Legende
+            for (var i = 0; i < numb_classes_bay; i++) {
+                grades_arr.push(Math.round(max_deaths_per_pop_bay * (classwidth_between_fac_bay * i)));
+            }////////////////////////////////////////////////////////
+
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades_arr,
+                labels = [];
+            div.innerHTML += '<h4>Legende</h4>';
+            div.innerHTML += '<p>Tote pro ' + per_pop_bay + ' EW:</p>';
+
+            ////Loop through our density intervals and generate a label with a colored square for each interval
+            ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
+            for (var i = 0; i < grades_arr.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + colorRamp_death((i / numb_classes_bay)) + '"></i> ' +
+                    grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
+            }
+            div.innerHTML += '<p style="font-size: 10px">Für die Aktualität der Daten <br> siehe einzelne Regionen!</p>';
+
+            return div;
+        };
+
+        // --- Legende für Fälle in Deutschland --- //
+        legend_ger_cases.onAdd = function (map) {
+
+            grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
+
+            //Generierung der Zahlenwerte der Klassen für die Legende
+            for (var i = 0; i < numb_classes_cases_ger; i++) {
+                grades_arr.push(Math.round(max_cases_per_pop_ger * (classwidth_between_fac * i)));
+            }////////////////////////////////////////////////////////
+
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades_arr,
+                labels = [];
+            div.innerHTML += '<h4>Legende</h4>';
+            div.innerHTML += '<p>Fälle pro ' + per_pop_ger + ' EW:</p>';
+
+            ////Loop through our density intervals and generate a label with a colored square for each interval
+            ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
+            for (var i = 0; i < grades_arr.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + colorRamp_cases((i / numb_classes_cases_ger)) + '"></i> ' +
+                    grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
+            }
+            div.innerHTML += '<p style="font-size: 10px">Für die Aktualität der Daten <br> siehe einzelne Bundesländer!</p>';
+
+            return div;
+        };
+
+        // --- Legende für Tode in Bayern --- //
+        legend_bay_cases.onAdd = function (map) {
+
+            grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
+
+            //Generierung der Zahlenwerte der Klassen für die Legende
+            for (var i = 0; i < numb_classes_cases_bay; i++) {
+                grades_arr.push(Math.round(max_cases_per_pop_bay * (classwidth_between_fac_bay * i)));
+            }////////////////////////////////////////////////////////
+
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades_arr,
+                labels = [];
+            div.innerHTML += '<h4>Legende</h4>';
+            div.innerHTML += '<p>Fälle pro ' + per_pop_bay + ' EW:</p>';
+
+            ////Loop through our density intervals and generate a label with a colored square for each interval
+            ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
+            for (var i = 0; i < grades_arr.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + colorRamp_cases((i / numb_classes_cases_bay)) + '"></i> ' +
+                    grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
+            }
+            div.innerHTML += '<p style="font-size: 10px">Für die Aktualität der Daten <br> siehe einzelne Regionen!</p>';
+
+            return div;
+        };
+
+        ////Defintion der Legende Fallzahlen pro 100.000 Einwohner bei Methode OnAdd mit dynamisccher Generierung der Klassenstufen
+
+        legend_cases.onAdd = function (map) {
+
+            grades_arr1 = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
+            //Generierung der Zahlenwerte der Klassen für die Legende
+            for (var i = 0; i < numb_classes_cases; i++) {
+                grades_arr1.push(Math.round(max_cases_per_pop * (classwidth_between_fac * i)));
+            }////////////////////////////////////////////////////////
+
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades_arr1,
+                labels = [];
+            div.innerHTML += '<h4>Legende</h4>';
+            div.innerHTML += '<p>Fälle/100.000 Einwohner: </p>';
+            ////Loop through our density intervals and generate a label with a colored square for each interval
+            ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
+            for (var i = 0; i < grades_arr1.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + colorRamp_cases_world((i / numb_classes_cases)) + '"></i> ' +
+                    grades_arr1[i] + (grades_arr1[i + 1] ? '&ndash;' + grades_arr1[i + 1] + '<br>' : '+');
+            }
+            div.innerHTML += '<p>Stabdiagramme: </p>';
+            div.innerHTML += '<i style="background:' + mc_color1 + '"></i> ' + ' Anzahl Fälle <br>';
+            div.innerHTML += '<i style="background:' + mc_color2 + '"></i> ' + ' Anzahl Tode';
+            div.innerHTML += '<p style="font-size: 10px;">Letzte Aktualisierung: <br>siehe einzelne Länder <p>';
+            return div;
+        }
+
+        legend_deaths.onAdd = function (map) {
+
+            grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
+            //Generierung der Zahlenwerte der Klassen für die Legende
+            for (var i = 0; i < numb_classes; i++) {
+                grades_arr.push(Math.round(max_deaths_per_pop * (classwidth_between_fac * i)));
+            }////////////////////////////////////////////////////////
+
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades_arr,
+                labels = [];
+            div.innerHTML += '<h4>Legende</h4>';
+            div.innerHTML += '<p>Tode/100.000 Einwohner: </p>';
+            ////Loop through our density intervals and generate a label with a colored square for each interval
+            ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
+            for (var i = 0; i < grades_arr.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + colorRamp_deaths_world((i / numb_classes)) + '"></i> ' +
+                    grades_arr[i] + (grades_arr[i + 1] ? '&ndash;' + grades_arr[i + 1] + '<br>' : '+');
+            }
+            div.innerHTML += '<p>Stabdiagramme: </p>';
+            div.innerHTML += '<i style="background:' + mc_color1 + '"></i> ' + ' Anzahl Fälle <br>';
+            div.innerHTML += '<i style="background:' + mc_color2 + '"></i> ' + ' Anzahl Tode';
+            div.innerHTML += '<p style="font-size: 10px;">Letzte Aktualisierung: <br>siehe einzelne Länder <p>';
+            return div;
+        };
+
+        ///////////////////////////////////////////
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////Funktion um die passende Legende zu lagen///////////////////////////////////////////////////////
+        //
+        // Source:  https://gis.stackexchange.com/questions/267605/leaflet-api-select-one-overlay-at-a-time-like-base-layers
+        //          https://gis.stackexchange.com/questions/76113/dynamically-set-zoom-level-based-on-a-bounding-box
+
+        map.on('baselayerchange', function (overlayMaps) {
+            // Switch to legend...
+            if (overlayMaps.name === 'Deutschland - Covid19 Fälle') {
+                // Lade Legende für Deutschland Fälle
+                this.removeControl(legend_ger_deaths);
+                this.removeControl(legend_bay_deaths);
+                this.removeControl(legend_bay_cases);
+                this.removeControl(legend_cases);
+                this.removeControl(legend_deaths);
+                this.removeLayer(graphLayerGroup);
+
+                legend_ger_cases.addTo(this);
+                this.fitBounds(geojsonLayer_ger_cases.getBounds());
+
+                // Regelt Sichtbarkeit der Chart Container
+                document.getElementById("chart_div").innerHTML = "";
+                document.getElementById("piechart_div").innerHTML = "";
+
+            } else if (overlayMaps.name === 'Deutschland - Covid19 Tote') {
+                // Lade Legende für Deutschland Tode
+                this.removeControl(legend_bay_deaths);
+                this.removeControl(legend_ger_cases);
+                this.removeControl(legend_bay_cases);
+                this.removeControl(legend_cases);
+                this.removeControl(legend_deaths);
+                this.removeLayer(graphLayerGroup);
+
+                legend_ger_deaths.addTo(this);
+                this.fitBounds(geojsonLayer_ger_deaths.getBounds());
+
+                // Regelt Sichtbarkeit der Chart Container
+                document.getElementById("chart_div").innerHTML = "";
+                document.getElementById("piechart_div").innerHTML = "";
+
+            } else if (overlayMaps.name === 'Bayern - Covid19 Fälle') {
+                // Lade Legende für Bayern Fälle
+                this.removeControl(legend_bay_deaths);
+                this.removeControl(legend_ger_cases);
+                this.removeControl(legend_ger_deaths);
+                this.removeControl(legend_cases);
+                this.removeControl(legend_deaths);
+                this.removeLayer(graphLayerGroup);
+
+                legend_bay_cases.addTo(this);
+                this.fitBounds(geojsonLayer_bay_cases.getBounds());
+
+                // Regelt Sichtbarkeit der Chart Container
+                document.getElementById("chart_div").innerHTML = "";
+                document.getElementById("piechart_div").innerHTML = "";
+
+            } else if (overlayMaps.name === 'Bayern - Covid19 Tote') {
+                // Lade Legende für Bayern Tode
+                this.removeControl(legend_ger_deaths);
+                this.removeControl(legend_ger_cases);
+                this.removeControl(legend_bay_cases);
+                this.removeControl(legend_cases);
+                this.removeControl(legend_deaths);
+                this.removeLayer(graphLayerGroup);
+
+                legend_bay_deaths.addTo(this);
+                this.fitBounds(geojsonLayer_bay_deaths.getBounds());
+
+                // Regelt Sichtbarkeit der Chart Container
+                document.getElementById("chart_div").innerHTML = "";
+                document.getElementById("piechart_div").innerHTML = "";
+
+            } else if (overlayMaps.name === 'Welt - Covid19 Fälle') {
+                // Lade Legende für Fälle
+                this.removeControl(legend_deaths);
+                this.removeControl(legend_ger_deaths);
+                this.removeControl(legend_ger_cases);
+                this.removeControl(legend_bay_cases);
+                this.removeControl(legend_bay_deaths);
+                this.removeLayer(graphLayerGroup);
+
+                legend_cases.addTo(this);
+                this.setView([0, 0], 2);
+                this.addLayer(graphLayerGroup);
+
+            } else if (overlayMaps.name === 'Welt - Covid19 Tote') {
+                // Lade Legende für Tode
+                this.removeControl(legend_cases);
+                this.removeControl(legend_ger_deaths);
+                this.removeControl(legend_ger_cases);
+                this.removeControl(legend_bay_cases);
+                this.removeControl(legend_bay_deaths);
+                this.removeLayer(graphLayerGroup);
+
+                legend_deaths.addTo(this);
+                this.setView([0, 0], 2);
+                this.addLayer(graphLayerGroup);
+
+            }
+        });
+    </script>
+
+</body>
+
+</html>
