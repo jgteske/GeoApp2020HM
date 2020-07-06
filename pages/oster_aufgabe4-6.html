@@ -508,8 +508,7 @@
                 daycount_cases_deaths_clicked_arr[i] = [i, cases_clicked_arr[i], deaths_clicked_arr[i]];
 
                 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                //### Hiermit könnte man die Daten in die x-Achse bringen, inedm bei der drawBasic Funktion unten ein Datafeldspalte > data.addColumn('date', 'Datum') hinzugefügt wird! Bei addRows müsste dann das folgende Array eingefügt werden und die Darstellungen in den Optionen angepasst(Johann Teske 23.06.2020)
-                daycount_cases_deaths_dates_clicked_arr[i] = [i, cases_clicked_arr[i], deaths_clicked_arr[i], new Date(dates_clicked_arr[i].replace(/#|-/g, ', '))];
+                daycount_cases_deaths_dates_clicked_arr[i] = [new Date(dates_clicked_arr[i].replace(/#|-/g, ', ')), cases_clicked_arr[i], deaths_clicked_arr[i]];
             }
 
             //Definition des Diagrammtyps mit dem Einladen der notwendigen Packages
@@ -517,26 +516,26 @@
             //Wenn Das Einladen der Packages abgeschlossen ist, dann startet der Generierungsaufruf
             google.charts.setOnLoadCallback(function () {
                 // Aufruf der Google Chart Zeichenmethode mit den entsprechenden Arrays des ausgewählten Landes als Parameter
-                drawBasic(daycount_cases_deaths_clicked_arr, daycount_cases_deaths_dates_clicked_arr, land_clicked, cases_count, dates_clicked_arr);
+                drawBasic(daycount_cases_deaths_dates_clicked_arr, land_clicked, cases_count);
             });
         }////////////////////////////// ENDE ClickOnFeature //////////////////////
 
         ///Funktion drawBasic ///
-        function drawBasic(daycount_cases_deaths_clicked_arr, daycount_cases_deaths_dates_clicked_arr, land_clicked, cases_count, dates_clicked_arr) {
+        function drawBasic(daycount_cases_deaths_dates_clicked_arr, land_clicked, cases_count) {
             var data = new google.visualization.DataTable();
             //Anlage der Datentabelle für Grafik (Datentyp und Spaltenname)
-            data.addColumn('number', 'Tag');
+            data.addColumn('date', 'Tage');
             data.addColumn('number', 'Fälle');
             data.addColumn('number', 'Tode');
             //Befüllung der Tabelle mit den Werten für das zuletzt ausgewählte Land
-            data.addRows(daycount_cases_deaths_clicked_arr);
+            data.addRows(daycount_cases_deaths_dates_clicked_arr);
 
             //Referenz auf Dokument Objekt des div-Containers als neues Line Chart Objekt 
             var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
 
             var options = {
 
-                title: land_clicked + ' - Zahlen zu Covid19 mit zeitlichem Verlauf: von ' + dates_clicked_arr[cases_count - 1] + ' bis ' + dates_clicked_arr[0],
+                title: land_clicked + ' - Zahlen zu Covid19 mit zeitlichem Verlauf: von ' + daycount_cases_deaths_dates_clicked_arr[0][0].toISOString().substring(0, 10) + ' bis ' + daycount_cases_deaths_dates_clicked_arr[cases_count - 1][0].toISOString().substring(0, 10),
                 //width: 1000,
                 height: 300,
                 series: {
@@ -549,7 +548,10 @@
                     1: { title: 'Todeszahlen' }
                 },
                 hAxis: {
-                    title: 'Tage'
+                    title: 'Tage',
+                    format: 'M/d/yy',
+                    gridlines: {count: 15}
+
                 },
                 backgroundColor: '#ebe5e5'
 
