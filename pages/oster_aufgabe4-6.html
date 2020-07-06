@@ -698,12 +698,16 @@
             if (overlayMaps.name === 'Covid19 - Fälle') {
                 // Lade Legende für Fälle
                 this.removeControl(legend_deaths);
+                map.removeLayer(graphLayerGroup);
                 legend_cases.addTo(this);
+                map.addLayer(graphLayerGroup);
                 
             } else {
                 // Lade Legende für Tode
                 this.removeControl(legend_cases);
+                map.removeLayer(graphLayerGroup);
                 legend_deaths.addTo(this);
+                map.addLayer(graphLayerGroup);
             }
         });
 
