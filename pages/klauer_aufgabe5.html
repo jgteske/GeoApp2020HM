@@ -230,7 +230,7 @@
             for (var i = 0; i < obj_count; i++) {
 
                 if (js_objects_of_json_string[i]['ewz'] > 0) {
-                    deaths_per_pop = (js_objects_of_json_string[i]['gerdeaths'] / js_objects_of_json_string[i]['ewz']) * per_pop;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+                    deaths_per_pop = (js_objects_of_json_string[i]['gerdeaths'] / js_objects_of_json_string[i]['ewz']) * per_pop;  ///hier mit Auslesen Berechnung Für Tote pro 100.000 EW 
 			
                 }
 
@@ -241,12 +241,12 @@
             }////////////////////////////////////////////////////////////////////////////////////////////
             
 
-            /////Maximalwerte der Tode und der Verhälniszahl Tode pro 100.000 EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
+            /////Maximalwerte der Tote und der Verhälniszahl Tote pro 100.000 EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
             max_deaths = Math.max.apply(null, deaths_per_object_arr);
             max_deaths_per_pop = Math.max.apply(null, all_deaths_per_pop_arr);
             
             
-            //Maximalzahl der Tode auf Ganzzahl gerundet
+            //Maximalzahl der Tote auf Ganzzahl gerundet
             max_deaths_per_pop = Math.round(max_deaths_per_pop);
             //Begrenzung auf manuell festgelegten Maximalwert für deaths_per_popder der für Chropletenkarte und Legende berücksichtigt wird
             if (max_deaths_per_pop > max_deaths_per_pop_allowed) { max_deaths_per_pop = max_deaths_per_pop_allowed };
@@ -303,7 +303,7 @@
             for (var i = 0; i < obj_count; i++) {
 
                 if (js_objects_of_json_string[i]['krs_ewz'] > 0) {
-                    deaths_per_pop_bay = (js_objects_of_json_string[i]['baydeaths'] / js_objects_of_json_string[i]['krs_ewz']) * per_pop_bay;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+                    deaths_per_pop_bay = (js_objects_of_json_string[i]['baydeaths'] / js_objects_of_json_string[i]['krs_ewz']) * per_pop_bay;  ///hier mit Auslesen Berechnung Für Tote pro 100.000 EW 
 			
                 }
 
@@ -314,12 +314,12 @@
             }////////////////////////////////////////////////////////////////////////////////////////////
             
 
-            /////Maximalwerte der Tode und der Verhälniszahl Tode pro EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
+            /////Maximalwerte der Tote und der Verhälniszahl Tote pro EW ermitteln, wichtig für Berechnungen zur Rangedefinition für Farbgebung und Legende
             max_deaths_bay = Math.max.apply(null, deaths_per_object_arr_bay);
             max_deaths_per_pop_bay = Math.max.apply(null, all_deaths_per_pop_arr_bay);
 
             
-            //Maximalzahl der Tode auf Ganzzahl gerundet
+            //Maximalzahl der Tote auf Ganzzahl gerundet
             max_deaths_per_pop_bay = Math.round(max_deaths_per_pop_bay);
             //Begrenzung auf manuell festgelegten Maximalwert für deaths_per_pop der der für Chropletenkarte und Legende berücksichtigt wird
             if (max_deaths_per_pop_bay > max_deaths_per_pop_allowed_bay) { max_deaths_per_pop_bay = max_deaths_per_pop_allowed_bay };
@@ -373,7 +373,7 @@
             for (var i = 0; i < obj_count; i++) {
 
                 if (js_objects_of_json_string[i]['ewz'] > 0) {
-                    cases_per_pop = (js_objects_of_json_string[i]['gercases'] / js_objects_of_json_string[i]['ewz']) * per_pop;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+                    cases_per_pop = (js_objects_of_json_string[i]['gercases'] / js_objects_of_json_string[i]['ewz']) * per_pop;  ///hier mit Auslesen Berechnung Für Tote pro 100.000 EW 
             
                 }
 
@@ -444,7 +444,7 @@
             for (var i = 0; i < obj_count; i++) {
 
                 if (js_objects_of_json_string[i]['krs_ewz'] > 0) {
-                    cases_per_pop_bay = (js_objects_of_json_string[i]['baycases'] / js_objects_of_json_string[i]['krs_ewz']) * per_pop_bay;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+                    cases_per_pop_bay = (js_objects_of_json_string[i]['baycases'] / js_objects_of_json_string[i]['krs_ewz']) * per_pop_bay;  ///hier mit Auslesen Berechnung Für Tote pro 100.000 EW 
 			
                 }
 
@@ -643,7 +643,7 @@
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ////Defintion der Legende Fallzahlen pro 100.000 Einwohner bei Methode OnAdd mit dynamisccher Generierung der Klassenstufen
         
-        // --- Legende für Tode in Deutschland --- //
+        // --- Legende für Tote in Deutschland --- //
         legend.onAdd = function (map) {
 
             grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
@@ -671,7 +671,7 @@
             return div;
         };
 
-        // --- Legende für Tode in Bayern --- //
+        // --- Legende für Tote in Bayern --- //
         legend_bay_deaths.onAdd = function (map) {
 
             grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
@@ -727,7 +727,7 @@
         return div;
         };
 
-        // --- Legende für Tode in Bayern --- //
+        // --- Legende für Tote in Bayern --- //
         legend_bay_cases.onAdd = function (map) {
 
         grades_arr = []; //Array für die Werte der Klassenabstufungen der Farbstufen 
@@ -772,7 +772,7 @@
                 legend_cases.addTo(this);
                 map.fitBounds(geojsonLayer_ger_cases.getBounds());
             } else if(overlayMaps.name === 'Deutschland - Covid19 Tote'){
-                // Lade Legende für Deutschland Tode
+                // Lade Legende für Deutschland Tote
                 this.removeControl(legend_bay_deaths);
                 this.removeControl(legend_cases);
                 this.removeControl(legend_bay_cases);
@@ -786,7 +786,7 @@
                 legend_bay_cases.addTo(this);
                 map.fitBounds(geojsonLayer_bay_cases.getBounds());
             } else if (overlayMaps.name === 'Bayern - Covid19 Tote') {
-                // Lade Legende für Bayern Tode
+                // Lade Legende für Bayern Tote
                 this.removeControl(legend);
                 this.removeControl(legend_cases);
                 this.removeControl(legend_bay_cases);

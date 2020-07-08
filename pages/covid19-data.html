@@ -148,10 +148,10 @@
             deaths_clicked_arr = eval(deaths_clicked_arr);
 
             console.log(land_clicked);
-            ///////////// Kombinierte Variablen von Fällen und Toden ///////////////////////////////////////
+            ///////////// Kombinierte Variablen von Fällen und Toten ///////////////////////////////////////
             //Initialisierung des mehrdimensionalen Arrays (Tag, Fälle, Todeszahlen) des gewählten Landes 
             var daycount_cases_deaths_clicked_arr = [];
-            //Initialisierung des mehrdimensionalen Arrays (Tag, Fallzahlen, Todeszahlen, Datum) des Landes 
+            //Initialisierung des mehrdimensionalen Arrays (Tag, Fallzahlen, Toteszahlen, Datum) des Landes 
             var daycount_cases_deaths_dates_clicked_arr = [];
 
             //Umkehrung der zeitl. Chronologie v. Fällen und Datumsreferenzen für aufsteigende Richtung 
@@ -162,7 +162,7 @@
             //Variablendefinition Zähler für nachfolgende For-Schleife 
             cases_count = cases_clicked_arr.length;
 
-            //Zusammenstellung der mehrdimensionalen Arrays für das ausgewählte Land für Tage, Fälle und Tode
+            //Zusammenstellung der mehrdimensionalen Arrays für das ausgewählte Land für Tage, Fälle und Tote
             for (var i = 0; i < cases_count; i++) {
                 daycount_cases_deaths_clicked_arr[i] = [i, cases_clicked_arr[i], deaths_clicked_arr[i]];
 
@@ -184,7 +184,7 @@
             //Anlage der Datentabelle für Grafik (Datentyp und Spaltenname)
             data.addColumn('date', 'Tage');
             data.addColumn('number', 'Fälle');
-            data.addColumn('number', 'Tode');
+            data.addColumn('number', 'Tote');
             //Befüllung der Tabelle mit den Werten für das zuletzt ausgewählte Land
             data.addRows(daycount_cases_deaths_dates_clicked_arr);
 

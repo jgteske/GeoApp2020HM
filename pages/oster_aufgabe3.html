@@ -208,7 +208,7 @@
             for (var i = 0; i < obj_count; i++) {
 
                 if (js_objects_of_json_string[i]['mpop'] > 0) {
-                    deaths_per_pop = (js_objects_of_json_string[i]['sdeaths'] / js_objects_of_json_string[i]['mpop']) * 100000;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+                    deaths_per_pop = (js_objects_of_json_string[i]['sdeaths'] / js_objects_of_json_string[i]['mpop']) * 100000;  ///hier mit Auslesen Berechnung Für Tote pro 100.000 EW 
 
                     // else hier nur temporär solgange bei Eritrea keine Einwohnerzahl in DB !!!
                 } else {
@@ -345,11 +345,11 @@
                 'Todefälle: ' + feature.properties.sdeaths + '<br>' +
                 '<br>' +
                 'Infizierte/100.000 EW: ~' + Math.round(feature.properties.scases/feature.properties.mpop*100000) + '<br>' +
-                'Tode/100.000 EW: ~' + Math.round(feature.properties.sdeaths/feature.properties.mpop*100000) + '<br>'+
+                'Tote/100.000 EW: ~' + Math.round(feature.properties.sdeaths/feature.properties.mpop*100000) + '<br>'+
                 '<br>' +
                 '<p style="font-size: 10px;">Letzte Aktualisierung: ' + feature.properties.mdate + '<p>'
             );
-            //'<h3>Landesdaten:</h3>' + '<pre>' + JSON.stringify(feature.properties, null, ' ').replace(/[\{\}"]/g, '') + '</pre>' + 'Tode/100.000 EW: ' + (feature.properties.sdeaths/feature.properties.mpop*100000).toFixed(4) + '<br>');
+            //'<h3>Landesdaten:</h3>' + '<pre>' + JSON.stringify(feature.properties, null, ' ').replace(/[\{\}"]/g, '') + '</pre>' + 'Tote/100.000 EW: ' + (feature.properties.sdeaths/feature.properties.mpop*100000).toFixed(4) + '<br>');
             
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -373,7 +373,7 @@
         };
 
         var overlayMaps = {
-            "Covid19 - Tode": geojsonLayer,
+            "Covid19 - Tote": geojsonLayer,
             "Covid19 - Fälle": geojsonLayer1
         };
 
@@ -399,7 +399,7 @@
                 grades_arr,
                 labels = [];
             div.innerHTML += '<h4>Legende</h4>';
-            div.innerHTML += '<p>Tode/100.000 Einwohner: </p>';
+            div.innerHTML += '<p>Tote/100.000 Einwohner: </p>';
 
             ////Loop through our density intervals and generate a label with a colored square for each interval
             ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
@@ -454,7 +454,7 @@
                 this.removeControl(legend_deaths);
                 legend_cases.addTo(this);
             } else {
-                // Lade Legende für Tode
+                // Lade Legende für Tote
                 this.removeControl(legend_cases);
                 legend_deaths.addTo(this);
             }

@@ -286,7 +286,7 @@
             for (var i = 0; i < obj_count; i++) {
 
                 if (js_objects_of_json_string[i]['mpop'] > 0) {
-                    deaths_per_pop = (js_objects_of_json_string[i]['sdeaths'] / js_objects_of_json_string[i]['mpop']) * 100000;  ///hier mit Auslesen Berechnung Für Tode pro 100.000 EW 
+                    deaths_per_pop = (js_objects_of_json_string[i]['sdeaths'] / js_objects_of_json_string[i]['mpop']) * 100000;  ///hier mit Auslesen Berechnung Für Tote pro 100.000 EW 
 
                     // else hier nur temporär solgange bei Eritrea keine Einwohnerzahl in DB !!!
                 } else {
@@ -452,7 +452,7 @@
                 'Todefälle: ' + feature.properties.sdeaths + '<br>' +
                 '<br>' +
                 'Infizierte/100.000 EW: ~' + Math.round(feature.properties.scases / feature.properties.mpop * 100000) + '<br>' +
-                'Tode/100.000 EW: ~' + Math.round(feature.properties.sdeaths / feature.properties.mpop * 100000) + '<br>' +
+                'Tote/100.000 EW: ~' + Math.round(feature.properties.sdeaths / feature.properties.mpop * 100000) + '<br>' +
                 '<br>' +
                 '<p style="font-size: 10px;">Letzte Aktualisierung: ' + feature.properties.mdate + '<p>'
             );
@@ -503,7 +503,7 @@
             //Variablendefinition Zähler für nachfolgende For-Schleife 
             cases_count = cases_clicked_arr.length;
 
-            //Zusammenstellung der mehrdimensionalen Arrays für das ausgewählte Land für Tage, Fälle und Tode
+            //Zusammenstellung der mehrdimensionalen Arrays für das ausgewählte Land für Tage, Fälle und Tote
             for (var i = 0; i < cases_count; i++) {
                 daycount_cases_deaths_clicked_arr[i] = [i, cases_clicked_arr[i], deaths_clicked_arr[i]];
 
@@ -526,7 +526,7 @@
             //Anlage der Datentabelle für Grafik (Datentyp und Spaltenname)
             data.addColumn('date', 'Tage');
             data.addColumn('number', 'Fälle');
-            data.addColumn('number', 'Tode');
+            data.addColumn('number', 'Tote');
             //Befüllung der Tabelle mit den Werten für das zuletzt ausgewählte Land
             data.addRows(daycount_cases_deaths_dates_clicked_arr);
 
@@ -623,7 +623,7 @@
 
         var overlayMaps = {
             "Covid19 - Fälle": geojsonLayer_cases,
-            "Covid19 - Tode": geojsonLayer_deaths
+            "Covid19 - Tote": geojsonLayer_deaths
         };
 
         L.control.layers(baseMaps).addTo(map);
@@ -656,7 +656,7 @@
             }
             div.innerHTML += '<p>Stabdiagramme: </p>';
             div.innerHTML += '<i style="background:' + mc_color1 + '"></i> ' + ' Anzahl Fälle <br>';
-            div.innerHTML += '<i style="background:' + mc_color2 + '"></i> ' + ' Anzahl Tode';
+            div.innerHTML += '<i style="background:' + mc_color2 + '"></i> ' + ' Anzahl Tote';
             div.innerHTML += '<p style="font-size: 10px;">Letzte Aktualisierung: <br>siehe einzelne Länder <p>';
             return div;
         }
@@ -673,7 +673,7 @@
                 grades_arr,
                 labels = [];
             div.innerHTML += '<h4>Legende</h4>';
-            div.innerHTML += '<p>Tode/100.000 Einwohner: </p>';
+            div.innerHTML += '<p>Tote/100.000 Einwohner: </p>';
             ////Loop through our density intervals and generate a label with a colored square for each interval
             ///////---Farbgebung neu über Methode aus Chrome.js und dynamischer Klassenanzahl---
             for (var i = 0; i < grades_arr.length; i++) {
@@ -683,7 +683,7 @@
             }
             div.innerHTML += '<p>Stabdiagramme: </p>';
             div.innerHTML += '<i style="background:' + mc_color1 + '"></i> ' + ' Anzahl Fälle <br>';
-            div.innerHTML += '<i style="background:' + mc_color2 + '"></i> ' + ' Anzahl Tode';
+            div.innerHTML += '<i style="background:' + mc_color2 + '"></i> ' + ' Anzahl Tote';
             div.innerHTML += '<p style="font-size: 10px;">Letzte Aktualisierung: <br>siehe einzelne Länder <p>';
             return div;
         };
@@ -705,7 +705,7 @@
                 map.addLayer(graphLayerGroup);
                 
             } else {
-                // Lade Legende für Tode
+                // Lade Legende für Tote
                 this.removeControl(legend_cases);
                 map.removeLayer(graphLayerGroup);
                 legend_deaths.addTo(this);
