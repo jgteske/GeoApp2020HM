@@ -135,6 +135,7 @@
         var legend_deaths = L.control({ position: 'bottomright' });
         var legend_cases = L.control({ position: 'bottomright' });
 
+        var legend_hospital = L.control({ position: 'bottomright' });
 
 
         ///////////////////////////////////////////////////////
@@ -668,6 +669,42 @@
         }/////Ende der Funktion handleJson//////////////////////////////////////////////
 
 
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////// OSM Data via WFS / GeoJSON Import Spezifikationen//////////////////////////////////////////////////////////////////////
+
+        // --- Tote pro EWZ in den einzelnen Bundesländern --- //
+        var geojsonLayer_osm = new L.GeoJSON(null, { onEachFeature: onEachFeature_osm });
+
+        $.ajax({
+            url: 'http://fk08srv01-2.geo.private.hm.edu:8080/geoserver/teske/ows',
+            data: {
+                version: '1.0.0',
+                request: 'GetFeature',
+                service: 'WFS',
+                typeName: 'teske:osm_buildings',
+                maxFeatures: '2000',
+                outputFormat: 'application/json',
+                // how to filter a ajax request: https://stackoverflow.com/questions/60294247/how-to-filter-feature-using-openlayer-and-wfs
+                "CQL_FILTER": "building='hospital'"
+            },
+            dataType: 'json',
+            jsonpCallback: 'getJson',
+            success: handleJson_osm
+        });
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        /////Funktion handleJson mit Generierung der Properties Arrays und statistischen Vorbrechnungen
+        function handleJson_osm(data) {
+
+            // adding the selected data to the layer
+            geojsonLayer_osm.addData(data);
+            console.log(data);
+
+            geojsonLayer_osm.setStyle(style_osm);
+        }/////Ende der Funktion handleJson_ger_deaths//////////////////////////////////////////////
+
+
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////// STYLING für die einzelnen Karten//////////////////////////////////////
@@ -817,6 +854,19 @@
 
         }////////////////////////////////////////////////
 
+        ///function to style osm overlay ///////////////////////////////
+        function style_osm(feature) {
+
+        return {
+            fillColor: 'red',
+            opacity: 1,
+            fillOpacity: 1,
+            color: "red",
+            weight: 1
+        }
+
+        }////////////////////////////////////////////////
+
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///Generierung aller Popup-Fenster aus den JSON feature.properties///////////////////////////////
@@ -885,6 +935,15 @@
                 click: ClickOnFeature_Pie
             });
 
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        ///Generierung aller Popup-Fenster aus den JSON feature.properties///////////////////////////////
+        function onEachFeature_osm(feature, layer) {
+            layer.bindPopup(
+                '<h2>' + feature.properties.building + '</h2>' +
+                'ID: ' + feature.properties.osm_id + '<br>'
+            );
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1108,7 +1167,8 @@
             "Deutschland - Covid19 Fälle": geojsonLayer_ger_cases,
             "Deutschland - Covid19 Tote": geojsonLayer_ger_deaths,
             "Bayern - Covid19 Fälle": geojsonLayer_bay_cases,
-            "Bayern - Covid19 Tote": geojsonLayer_bay_deaths
+            "Bayern - Covid19 Tote": geojsonLayer_bay_deaths,
+            "Bayern - Krankenhäuser": geojsonLayer_osm
 
         };
 
@@ -1289,6 +1349,15 @@
             return div;
         };
 
+        // --- Legende für Krankenhäuser in Bayern --- //
+        legend_hospital.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            div.innerHTML += '<h4>Legende</h4>';
+            div.innerHTML += '<i style="background: red;"></i> ' + ' Krankenhaus';
+            div.innerHTML += '<p style="font-size: 10px;">Letzte Aktualisierung: <br>siehe einzelne Länder <p>';
+            return div;
+        }
+
         ///////////////////////////////////////////
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1306,6 +1375,7 @@
                 this.removeControl(legend_bay_cases);
                 this.removeControl(legend_cases);
                 this.removeControl(legend_deaths);
+                this.removeControl(legend_hospital);
                 this.removeLayer(graphLayerGroup);
 
                 legend_ger_cases.addTo(this);
@@ -1322,6 +1392,7 @@
                 this.removeControl(legend_bay_cases);
                 this.removeControl(legend_cases);
                 this.removeControl(legend_deaths);
+                this.removeControl(legend_hospital);
                 this.removeLayer(graphLayerGroup);
 
                 legend_ger_deaths.addTo(this);
@@ -1338,6 +1409,7 @@
                 this.removeControl(legend_ger_deaths);
                 this.removeControl(legend_cases);
                 this.removeControl(legend_deaths);
+                this.removeControl(legend_hospital);
                 this.removeLayer(graphLayerGroup);
 
                 legend_bay_cases.addTo(this);
@@ -1355,6 +1427,7 @@
                 this.removeControl(legend_cases);
                 this.removeControl(legend_deaths);
                 this.removeLayer(graphLayerGroup);
+                this.removeControl(legend_hospital);
 
                 legend_bay_deaths.addTo(this);
                 this.fitBounds(geojsonLayer_bay_deaths.getBounds());
@@ -1370,6 +1443,7 @@
                 this.removeControl(legend_ger_cases);
                 this.removeControl(legend_bay_cases);
                 this.removeControl(legend_bay_deaths);
+                this.removeControl(legend_hospital);
                 this.removeLayer(graphLayerGroup);
 
                 legend_cases.addTo(this);
@@ -1383,13 +1457,29 @@
                 this.removeControl(legend_ger_cases);
                 this.removeControl(legend_bay_cases);
                 this.removeControl(legend_bay_deaths);
+                this.removeControl(legend_hospital);
                 this.removeLayer(graphLayerGroup);
 
                 legend_deaths.addTo(this);
                 this.setView([0, 0], 2);
                 this.addLayer(graphLayerGroup);
 
+            } else if (overlayMaps.name === 'Bayern - Krankenhäuser') {
+                // Laden von Krankenhäusern
+                this.removeControl(legend_cases);
+                this.removeControl(legend_deaths);
+                this.removeControl(legend_ger_deaths);
+                this.removeControl(legend_ger_cases);
+                this.removeControl(legend_bay_cases);
+                this.removeControl(legend_bay_deaths);
+                this.removeLayer(graphLayerGroup);
+                
+
+                legend_hospital.addTo(this);
+                this.fitBounds(geojsonLayer_bay_cases.getBounds());
+
             }
+            
         });
     </script>
 
