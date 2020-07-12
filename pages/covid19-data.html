@@ -170,7 +170,7 @@
             }
 
             //Definition des Diagrammtyps mit dem Einladen der notwendigen Packages
-            google.charts.load('current', {'packages':['bar']});
+            google.charts.load('current', { packages: ['corechart', 'line'] });
             //Wenn Das Einladen der Packages abgeschlossen ist, dann startet der Generierungsaufruf
             google.charts.setOnLoadCallback(function () {
                 // Aufruf der Google Chart Zeichenmethode mit den entsprechenden Arrays des ausgewählten Landes als Parameter
@@ -189,7 +189,7 @@
             data.addRows(daycount_cases_deaths_dates_clicked_arr);
 
             //Referenz auf Dokument Objekt des div-Containers als neues Line Chart Objekt 
-            var chart = new google.charts.Bar(document.getElementById('chart_div'));
+            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
 
             var options = {
 
@@ -214,7 +214,7 @@
                 //backgroundColor: '#ebe5e5'
 
             };
-            chart.draw(data, google.charts.Bar.convertOptions(options));
+            chart.draw(data, options);
         }///////////// Ende der drawBasic Funktion für das LineChart Diagramm //////////////////
         /////////////////////////////////////////////////////////////////// Ende Oster Aufgabe 4 ///////////////////////////////////////////////////////////////////
 
