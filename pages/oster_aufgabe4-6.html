@@ -69,7 +69,7 @@
     <div id="mapid" style="width: 100%; height: 750px;"></div>
 
     <!-- Kontainer für die Google Charts -->
-    <div id="chart_div"></div>
+    <div id="chart_div" style="margin-top: 2rem;"></div>
     <div id="piechart_div"></div>
 
     <script>
@@ -512,7 +512,9 @@
             }
 
             //Definition des Diagrammtyps mit dem Einladen der notwendigen Packages
-            google.charts.load('current', { packages: ['corechart', 'line'] });
+            //google.charts.load('current', { packages: ['corechart', 'line'] });
+            google.charts.load('current', {'packages':['bar']});
+
             //Wenn Das Einladen der Packages abgeschlossen ist, dann startet der Generierungsaufruf
             google.charts.setOnLoadCallback(function () {
                 // Aufruf der Google Chart Zeichenmethode mit den entsprechenden Arrays des ausgewählten Landes als Parameter
@@ -531,13 +533,13 @@
             data.addRows(daycount_cases_deaths_dates_clicked_arr);
 
             //Referenz auf Dokument Objekt des div-Containers als neues Line Chart Objekt 
-            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            var chart = new google.charts.Bar(document.getElementById('chart_div'));
 
             var options = {
 
                 title: land_clicked + ' - Zahlen zu Covid19 mit zeitlichem Verlauf: von ' + daycount_cases_deaths_dates_clicked_arr[0][0].toISOString().substring(0, 10) + ' bis ' + daycount_cases_deaths_dates_clicked_arr[cases_count - 1][0].toISOString().substring(0, 10),
                 //width: 1000,
-                height: 300,
+                height: 400,
                 series: {
                     0: { targetAxisIndex: 0 },
                     1: { targetAxisIndex: 1 },
@@ -553,10 +555,10 @@
                     gridlines: {count: 15}
 
                 },
-                backgroundColor: '#ebe5e5'
+                //backgroundColor: '#ebe5e5'
 
             };
-            chart.draw(data, options);
+            chart.draw(data, google.charts.Bar.convertOptions(options));
         }///////////// Ende der drawBasic Funktion für das LineChart Diagramm //////////////////
         /////////////////////////////////////////////////////////////////// Ende Oster Aufgabe 4 ///////////////////////////////////////////////////////////////////
 
